@@ -27,13 +27,13 @@ interface AsteroidsGameProps {
 export function AsteroidsGame({ onExit }: AsteroidsGameProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [score, setScore] = useState(0);
-  const [lives, setLives] = useState(3);
+  const [lives] = useState(3);
+  const runningRef = useRef(true);
   const gameRef = useRef({
     ship: { x: 0, y: 0, dx: 0, dy: 0, size: 12, rotation: 0 } as Entity,
     bullets: [] as Bullet[],
     asteroids: [] as GameAsteroid[],
     keys: new Set<string>(),
-    running: true,
     score: 0,
     lives: 3,
   });
@@ -82,13 +82,18 @@ export function AsteroidsGame({ onExit }: AsteroidsGameProps) {
 
     canvas.width = window.innerWidth;
     canvas.height = window.innerHeight;
+    runningRef.current = true;
     initGame();
+
+    // Fill with solid background immediately so canvas isn't transparent
+    ctx.fillStyle = "#020010";
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
 
     const game = gameRef.current;
 
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === "Escape") {
-        game.running = false;
+        runningRef.current = false;
         onExit();
         return;
       }
@@ -118,7 +123,7 @@ export function AsteroidsGame({ onExit }: AsteroidsGameProps) {
     let animId: number;
 
     const loop = () => {
-      if (!game.running) return;
+      if (!runningRef.current) return;
 
       const w = canvas.width;
       const h = canvas.height;
@@ -155,16 +160,13 @@ export function AsteroidsGame({ onExit }: AsteroidsGameProps) {
         a.rotation += 0.01;
       });
 
-      // Bullet-asteroid collision
       for (let bi = game.bullets.length - 1; bi >= 0; bi--) {
         const b = game.bullets[bi];
         for (let ai = game.asteroids.length - 1; ai >= 0; ai--) {
           const a = game.asteroids[ai];
           const dist = Math.hypot(b.x - a.x, b.y - a.y);
           if (dist < a.size) {
-            if (a.isProject) {
-              // Project asteroids are shielded
-            } else {
+            if (!a.isProject) {
               game.bullets.splice(bi, 1);
               game.asteroids.splice(ai, 1);
               game.score += 10;
@@ -189,7 +191,7 @@ export function AsteroidsGame({ onExit }: AsteroidsGameProps) {
       }
 
       // Draw
-      ctx.fillStyle = "rgba(3, 0, 20, 0.3)";
+      ctx.fillStyle = "#020010";
       ctx.fillRect(0, 0, w, h);
 
       // Ship
@@ -267,7 +269,8 @@ export function AsteroidsGame({ onExit }: AsteroidsGameProps) {
           ctx.beginPath();
           for (let i = 0; i <= sides; i++) {
             const angle = (i / sides) * Math.PI * 2;
-            const r = a.size * (0.8 + Math.sin(angle * 2.5 + a.rotation) * 0.2);
+            const r =
+              a.size * (0.8 + Math.sin(angle * 2.5 + a.rotation) * 0.2);
             const px = Math.cos(angle) * r;
             const py = Math.sin(angle) * r;
             if (i === 0) ctx.moveTo(px, py);
@@ -280,14 +283,24 @@ export function AsteroidsGame({ onExit }: AsteroidsGameProps) {
         ctx.restore();
       });
 
-      // Spawn new asteroids periodically
+      // Spawn new junk asteroids
       if (game.asteroids.filter((a) => !a.isProject).length < 3) {
         const edge = Math.floor(Math.random() * 4);
-        let x = 0, y = 0;
-        if (edge === 0) { x = Math.random() * w; y = 0; }
-        else if (edge === 1) { x = w; y = Math.random() * h; }
-        else if (edge === 2) { x = Math.random() * w; y = h; }
-        else { x = 0; y = Math.random() * h; }
+        let x = 0,
+          y = 0;
+        if (edge === 0) {
+          x = Math.random() * w;
+          y = 0;
+        } else if (edge === 1) {
+          x = w;
+          y = Math.random() * h;
+        } else if (edge === 2) {
+          x = Math.random() * w;
+          y = h;
+        } else {
+          x = 0;
+          y = Math.random() * h;
+        }
 
         game.asteroids.push({
           x,
@@ -306,7 +319,7 @@ export function AsteroidsGame({ onExit }: AsteroidsGameProps) {
     animId = requestAnimationFrame(loop);
 
     return () => {
-      game.running = false;
+      runningRef.current = false;
       window.removeEventListener("keydown", handleKeyDown);
       window.removeEventListener("keyup", handleKeyUp);
       cancelAnimationFrame(animId);
@@ -315,14 +328,14 @@ export function AsteroidsGame({ onExit }: AsteroidsGameProps) {
 
   return (
     <motion.div
-      className="fixed inset-0 z-60"
+      className="fixed inset-0"
+      style={{ zIndex: 70 }}
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
     >
-      <canvas ref={canvasRef} className="w-full h-full" />
+      <canvas ref={canvasRef} className="w-full h-full block" />
 
-      {/* HUD */}
       <div className="absolute top-6 left-6 font-mono text-xs">
         <p className="text-terminal">SCORE: {score}</p>
         <p className="text-accent-lava mt-1">

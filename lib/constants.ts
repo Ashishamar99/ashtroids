@@ -37,7 +37,7 @@ export const CAMERA_DEFAULTS = {
 };
 
 export const SCENE_COLORS = {
-  background: "#030014",
+  background: "#020010",
   orbitRing: "#1a1a3e",
   starField: "#ffffff",
   ambientLight: "#1a1a2e",

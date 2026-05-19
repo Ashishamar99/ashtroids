@@ -1,10 +1,11 @@
 "use client";
-import { useState, useRef, useCallback, useEffect } from "react";
+import { useState, useRef, useCallback, useEffect, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useRouter } from "next/navigation";
 import type { Project } from "@/data/projects";
 import { ASTEROID_COLORS, ORBIT_RADII, ORBIT_SPEEDS } from "@/lib/constants";
 import { useStore } from "@/lib/store";
+import { generateProjectAsteroid } from "@/lib/asteroidGenerator";
 
 interface AsteroidProps {
   project: Project;
@@ -16,11 +17,11 @@ interface AsteroidProps {
 }
 
 const ASTEROID_PX_SIZES: Record<number, number> = {
-  1: 28,
-  2: 40,
-  3: 55,
-  4: 72,
-  5: 90,
+  1: 32,
+  2: 48,
+  3: 64,
+  4: 85,
+  5: 105,
 };
 
 export function Asteroid({
@@ -33,34 +34,64 @@ export function Asteroid({
 }: AsteroidProps) {
   const [hovered, setHovered] = useState(false);
   const [launching, setLaunching] = useState(false);
-  const [angle, setAngle] = useState(
-    () => (index / totalInOrbit) * Math.PI * 2
-  );
+  const [textureUrl, setTextureUrl] = useState<string | null>(null);
+
+  const posRef = useRef({ angle: (index / totalInOrbit) * Math.PI * 2, rot: Math.random() * 360 });
+  const [pos, setPos] = useState({ x: 0, y: 0, rot: 0 });
   const animRef = useRef<number>(0);
   const router = useRouter();
   const setHoveredAsteroid = useStore((s) => s.setHoveredAsteroid);
 
   const colors = ASTEROID_COLORS[project.asteroidType];
-  const size = ASTEROID_PX_SIZES[project.size] || 55;
+  const size = ASTEROID_PX_SIZES[project.size] || 64;
   const orbitRadius = ORBIT_RADII[project.orbit] * 40 * zoom;
   const speed = ORBIT_SPEEDS[project.orbit];
 
+  // Unique tumble speed per asteroid
+  const tumbleSpeed = useMemo(() => {
+    let h = 0;
+    for (let i = 0; i < project.slug.length; i++) {
+      h = (h << 5) - h + project.slug.charCodeAt(i);
+    }
+    return 3 + (Math.abs(h) % 15);
+  }, [project.slug]);
+
+  // Generate texture on mount
+  useEffect(() => {
+    const url = generateProjectAsteroid(
+      project.slug,
+      project.asteroidType,
+      size
+    );
+    setTextureUrl(url);
+  }, [project.slug, project.asteroidType, size]);
+
+  // Orbit + tumble animation loop
   useEffect(() => {
     if (launching) return;
     let last = performance.now();
+
     const tick = (now: number) => {
       const dt = (now - last) / 1000;
       last = now;
-      setAngle((a) => a + speed * dt);
+      const p = posRef.current;
+      p.angle += speed * dt;
+      p.rot += tumbleSpeed * dt;
+
+      const wobbleX = Math.sin(p.angle * 3 + index * 2) * 4;
+      const wobbleY = Math.cos(p.angle * 2.3 + index * 1.7) * 6;
+
+      setPos({
+        x: centerX + Math.cos(p.angle) * orbitRadius + wobbleX,
+        y: centerY + Math.sin(p.angle) * orbitRadius * 0.45 + wobbleY,
+        rot: p.rot,
+      });
+
       animRef.current = requestAnimationFrame(tick);
     };
     animRef.current = requestAnimationFrame(tick);
     return () => cancelAnimationFrame(animRef.current);
-  }, [speed, launching]);
-
-  const wobble = Math.sin(angle * 2 + index) * 6;
-  const x = centerX + Math.cos(angle) * orbitRadius;
-  const y = centerY + Math.sin(angle) * orbitRadius * 0.45 + wobble;
+  }, [speed, launching, orbitRadius, centerX, centerY, index, tumbleSpeed]);
 
   const handleClick = useCallback(() => {
     if (project.orbit === "deep") {
@@ -68,9 +99,7 @@ export function Asteroid({
       return;
     }
     setLaunching(true);
-    setTimeout(() => {
-      router.push(`/projects/${project.slug}`);
-    }, 700);
+    setTimeout(() => router.push(`/projects/${project.slug}`), 750);
   }, [project, router]);
 
   const handleHoverStart = useCallback(() => {
@@ -83,117 +112,94 @@ export function Asteroid({
     setHoveredAsteroid(null);
   }, [setHoveredAsteroid]);
 
-  const rotation = (angle * 180) / Math.PI;
+  if (!textureUrl) return null;
 
   return (
     <motion.div
       className="absolute cursor-pointer select-none"
       style={{
-        left: x - size / 2,
-        top: y - size / 2,
-        zIndex: hovered ? 50 : Math.round(y),
+        left: pos.x - size / 2,
+        top: pos.y - size / 2,
+        zIndex: hovered ? 50 : Math.round(pos.y),
       }}
       animate={
         launching
           ? {
-              scale: [1, 1.5, 3],
+              scale: [1, 1.3, 0.2],
               opacity: [1, 1, 0],
-              x: [0, 0, window.innerWidth / 2 - x],
-              y: [0, 0, window.innerHeight / 2 - y],
+              x: [0, 0, window.innerWidth / 2 - pos.x],
+              y: [0, 0, window.innerHeight / 2 - pos.y],
+              filter: [
+                "brightness(1)",
+                "brightness(2.5)",
+                "brightness(4)",
+              ],
             }
-          : { scale: 1, opacity: 1 }
+          : {}
       }
       transition={
         launching
-          ? { duration: 0.7, ease: [0.22, 1, 0.36, 1] }
-          : { duration: 0.3 }
+          ? { duration: 0.75, ease: [0.22, 1, 0.36, 1] }
+          : undefined
       }
       onHoverStart={handleHoverStart}
       onHoverEnd={handleHoverEnd}
       onClick={handleClick}
     >
-      {/* Main asteroid body */}
-      <motion.div
-        className="relative"
-        style={{ width: size, height: size }}
-        animate={{
-          rotate: launching ? rotation + 720 : rotation,
+      {/* Shadow underneath (depth cue) */}
+      <div
+        className="absolute rounded-full transition-all duration-300"
+        style={{
+          width: size * 0.7,
+          height: size * 0.15,
+          left: size * 0.15,
+          bottom: -size * 0.12,
+          background: "rgba(0,0,0,0.3)",
+          filter: "blur(6px)",
+          opacity: hovered ? 0.5 : 0.2,
         }}
-        transition={
-          launching
-            ? { duration: 0.7 }
-            : { duration: 0, type: false }
-        }
+      />
+
+      {/* Atmospheric glow ring on hover */}
+      <div
+        className="absolute inset-0 rounded-full transition-all duration-500 pointer-events-none"
+        style={{
+          transform: "scale(1.5)",
+          background: `radial-gradient(circle, transparent 30%, ${colors.glow}15 60%, transparent 70%)`,
+          opacity: hovered ? 1 : 0,
+        }}
+      />
+
+      {/* The asteroid texture (rotating) */}
+      <div
+        className="relative"
+        style={{
+          width: size,
+          height: size,
+          transform: `rotate(${pos.rot}deg)`,
+          willChange: "transform",
+        }}
       >
-        {/* Glow */}
-        <div
-          className="absolute inset-0 rounded-full blur-md transition-opacity duration-300"
+        <img
+          src={textureUrl}
+          alt={project.title}
+          className="w-full h-full"
           style={{
-            background: colors.glow,
-            opacity: hovered ? 0.5 : 0.15,
-            transform: "scale(1.4)",
+            filter: hovered
+              ? `drop-shadow(0 0 8px ${colors.glow}) brightness(1.15)`
+              : "brightness(0.95)",
+            transition: "filter 0.3s",
           }}
+          draggable={false}
         />
-
-        {/* Body */}
-        <svg
-          viewBox="0 0 100 100"
-          className="absolute inset-0 w-full h-full drop-shadow-lg"
-        >
-          <polygon
-            points={getAsteroidShape(project.slug)}
-            fill={colors.base}
-            stroke={hovered ? colors.glow : colors.emissive}
-            strokeWidth={hovered ? 2 : 1}
-            style={{
-              filter: hovered
-                ? `drop-shadow(0 0 6px ${colors.glow})`
-                : "none",
-              transition: "all 0.3s",
-            }}
-          />
-        </svg>
-
-        {/* Ember particles for lava type */}
-        {project.asteroidType === "lava" && (
-          <div className="absolute inset-0">
-            {[...Array(3)].map((_, i) => (
-              <div
-                key={i}
-                className="absolute w-1 h-1 rounded-full animate-float"
-                style={{
-                  background: colors.glow,
-                  left: `${30 + i * 20}%`,
-                  top: `${20 + i * 15}%`,
-                  animationDelay: `${i * 0.5}s`,
-                  opacity: 0.7,
-                }}
-              />
-            ))}
-          </div>
-        )}
-
-        {/* Glowing core for experimental */}
-        {project.asteroidType === "glowing" && (
-          <div
-            className="absolute rounded-full animate-pulse-glow"
-            style={{
-              width: "40%",
-              height: "40%",
-              left: "30%",
-              top: "30%",
-              background: `radial-gradient(circle, ${colors.glow}80, transparent)`,
-            }}
-          />
-        )}
-      </motion.div>
+      </div>
 
       {/* Hover info card */}
       <AnimatePresence>
         {hovered && !launching && (
           <motion.div
-            className="absolute left-1/2 -translate-x-1/2 glass rounded-lg px-4 py-3 min-w-[200px] text-center pointer-events-none whitespace-nowrap"
-            style={{ bottom: size + 12 }}
+            className="absolute left-1/2 -translate-x-1/2 glass rounded-lg px-4 py-3 min-w-[220px] text-center pointer-events-none"
+            style={{ bottom: size + 16 }}
             initial={{ opacity: 0, y: 8 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: 8 }}
@@ -219,49 +225,57 @@ export function Asteroid({
         )}
       </AnimatePresence>
 
-      {/* Label below */}
+      {/* Label */}
       <p
-        className="absolute left-1/2 -translate-x-1/2 text-[10px] font-mono text-secondary/50 whitespace-nowrap transition-colors duration-300"
+        className="absolute left-1/2 -translate-x-1/2 text-[10px] font-mono whitespace-nowrap transition-all duration-300"
         style={{
-          top: size + 4,
-          color: hovered ? colors.glow : undefined,
+          top: size + 6,
+          color: hovered ? colors.glow : "rgba(138,134,160,0.4)",
+          textShadow: hovered ? `0 0 8px ${colors.glow}60` : "none",
         }}
       >
         {project.title}
       </p>
 
-      {/* Launch trail effect */}
+      {/* Launch burst */}
       {launching && (
-        <motion.div
-          className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 rounded-full"
-          initial={{ width: size, height: size, opacity: 0.8 }}
-          animate={{ width: size * 4, height: size * 4, opacity: 0 }}
-          transition={{ duration: 0.6 }}
-          style={{
-            background: `radial-gradient(circle, ${colors.glow}, transparent)`,
-          }}
-        />
+        <>
+          <motion.div
+            className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 rounded-full"
+            initial={{ width: size, height: size, opacity: 0.9 }}
+            animate={{ width: size * 5, height: size * 5, opacity: 0 }}
+            transition={{ duration: 0.6 }}
+            style={{
+              background: `radial-gradient(circle, ${colors.glow}, ${colors.emissive}40, transparent)`,
+            }}
+          />
+          {/* Debris particles */}
+          {[...Array(6)].map((_, i) => {
+            const pAngle = (i / 6) * Math.PI * 2;
+            return (
+              <motion.div
+                key={i}
+                className="absolute rounded-full"
+                style={{
+                  width: 3,
+                  height: 3,
+                  background: colors.glow,
+                  left: size / 2,
+                  top: size / 2,
+                }}
+                initial={{ opacity: 0.8 }}
+                animate={{
+                  x: Math.cos(pAngle) * 60,
+                  y: Math.sin(pAngle) * 60,
+                  opacity: 0,
+                  scale: 0,
+                }}
+                transition={{ duration: 0.5, delay: 0.1 }}
+              />
+            );
+          })}
+        </>
       )}
     </motion.div>
   );
-}
-
-function getAsteroidShape(seed: string): string {
-  let hash = 0;
-  for (let i = 0; i < seed.length; i++) {
-    hash = (hash << 5) - hash + seed.charCodeAt(i);
-    hash |= 0;
-  }
-
-  const points = 8;
-  const coords: string[] = [];
-  for (let i = 0; i < points; i++) {
-    const angle = (i / points) * Math.PI * 2;
-    const rng = Math.abs(Math.sin(hash * (i + 1) * 0.1)) * 0.25;
-    const r = 35 + rng * 30;
-    const cx = 50 + Math.cos(angle) * r;
-    const cy = 50 + Math.sin(angle) * r;
-    coords.push(`${cx.toFixed(1)},${cy.toFixed(1)}`);
-  }
-  return coords.join(" ");
 }
