@@ -17,7 +17,7 @@ export function HUD() {
         transition={{ duration: 0.8, delay: 0.5 }}
       >
         <h1 className="text-lg font-mono font-bold tracking-[0.3em] text-primary">
-          ASH-TROIDS
+          ASH-TEROIDS
         </h1>
         <p className="text-[10px] font-mono text-secondary tracking-wider mt-0.5">
           EXPERIMENTS BY ASHISH

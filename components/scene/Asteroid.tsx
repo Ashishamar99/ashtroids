@@ -17,11 +17,11 @@ interface AsteroidProps {
 }
 
 const ASTEROID_PX_SIZES: Record<number, number> = {
-  1: 32,
-  2: 48,
-  3: 64,
-  4: 85,
-  5: 105,
+  1: 22,
+  2: 32,
+  3: 44,
+  4: 58,
+  5: 72,
 };
 
 export function Asteroid({
@@ -146,29 +146,16 @@ export function Asteroid({
       onHoverEnd={handleHoverEnd}
       onClick={handleClick}
     >
-      {/* Shadow underneath (depth cue) */}
-      <div
-        className="absolute rounded-full transition-all duration-300"
-        style={{
-          width: size * 0.7,
-          height: size * 0.15,
-          left: size * 0.15,
-          bottom: -size * 0.12,
-          background: "rgba(0,0,0,0.3)",
-          filter: "blur(6px)",
-          opacity: hovered ? 0.5 : 0.2,
-        }}
-      />
-
-      {/* Atmospheric glow ring on hover */}
-      <div
-        className="absolute inset-0 rounded-full transition-all duration-500 pointer-events-none"
-        style={{
-          transform: "scale(1.5)",
-          background: `radial-gradient(circle, transparent 30%, ${colors.glow}15 60%, transparent 70%)`,
-          opacity: hovered ? 1 : 0,
-        }}
-      />
+      {/* Subtle highlight on hover — no atmospheric glow (asteroids have no atmosphere) */}
+      {hovered && (
+        <div
+          className="absolute inset-0 pointer-events-none transition-opacity duration-300"
+          style={{
+            transform: "scale(1.3)",
+            background: `radial-gradient(circle, ${colors.glow}18, transparent 70%)`,
+          }}
+        />
+      )}
 
       {/* The asteroid texture (rotating) */}
       <div

@@ -346,16 +346,18 @@ export function AsteroidsGame({ onExit }: AsteroidsGameProps) {
       <div className="absolute top-6 right-6">
         <button
           onClick={onExit}
-          className="text-secondary/40 hover:text-secondary font-mono text-xs transition-colors"
+          className="glass rounded-lg px-4 py-2 text-accent-lava hover:text-primary font-mono text-sm transition-colors"
         >
-          [ESC] EXIT
+          [ESC] EXIT GAME
         </button>
       </div>
 
-      <div className="absolute bottom-6 left-1/2 -translate-x-1/2 text-center">
-        <p className="text-[10px] font-mono text-secondary/30">
-          ARROWS / WASD to move · SPACE to shoot · Shielded asteroids are
-          projects
+      <div className="absolute bottom-6 left-1/2 -translate-x-1/2 text-center glass rounded-lg px-4 py-2">
+        <p className="text-xs font-mono text-secondary">
+          ARROWS / WASD to move · SPACE to shoot
+        </p>
+        <p className="text-[10px] font-mono text-secondary/50 mt-1">
+          Shielded asteroids are projects · Press ESC or click EXIT to quit
         </p>
       </div>
     </motion.div>

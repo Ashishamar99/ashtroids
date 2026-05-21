@@ -21,7 +21,7 @@ export const viewport: Viewport = {
 };
 
 export const metadata: Metadata = {
-  title: "ASH-TROIDS | Experiments by Ashish",
+  title: "ASH-TEROIDS | Experiments by Ashish",
   description:
     "An interactive universe of projects, experiments, and ideas — orbiting one developer.",
   keywords: [
@@ -30,18 +30,18 @@ export const metadata: Metadata = {
     "developer",
     "software engineer",
     "projects",
-    "ashtroids",
+    "ash-teroids",
   ],
   openGraph: {
-    title: "ASH-TROIDS | Experiments by Ashish",
+    title: "ASH-TEROIDS | Experiments by Ashish",
     description:
       "An interactive universe of projects, experiments, and ideas — orbiting one developer.",
     type: "website",
-    siteName: "ASH-TROIDS",
+    siteName: "ASH-TEROIDS",
   },
   twitter: {
     card: "summary_large_image",
-    title: "ASH-TROIDS | Experiments by Ashish",
+    title: "ASH-TEROIDS | Experiments by Ashish",
     description:
       "An interactive universe of projects, experiments, and ideas — orbiting one developer.",
   },

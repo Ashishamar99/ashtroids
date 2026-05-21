@@ -7,6 +7,7 @@ import { ProjectCard } from "./ProjectCard";
 
 export function RecruiterMode() {
   const viewMode = useStore((s) => s.viewMode);
+  const setViewMode = useStore((s) => s.setViewMode);
 
   const innerProjects = projects.filter((p) => p.orbit === "inner");
   const midProjects = projects.filter((p) => p.orbit === "mid");
@@ -24,6 +25,20 @@ export function RecruiterMode() {
           transition={{ duration: 0.4 }}
         >
           <div className="max-w-3xl mx-auto px-6 py-20">
+            {/* Back to orbit */}
+            <motion.button
+              onClick={() => setViewMode("orbit")}
+              className="flex items-center gap-2 text-secondary hover:text-primary transition-colors font-mono text-xs group mb-8"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 0.05 }}
+            >
+              <span className="group-hover:-translate-x-1 transition-transform">
+                &lt;-
+              </span>
+              <span>Return to orbit</span>
+            </motion.button>
+
             {/* Header */}
             <motion.div
               initial={{ opacity: 0, y: 20 }}

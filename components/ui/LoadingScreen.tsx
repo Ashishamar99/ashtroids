@@ -45,7 +45,7 @@ export function LoadingScreen({ onComplete }: LoadingScreenProps) {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6 }}
           >
-            ASH-TROIDS
+            ASH-TEROIDS
           </motion.h1>
 
           <motion.p

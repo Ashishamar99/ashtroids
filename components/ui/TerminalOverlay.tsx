@@ -29,7 +29,7 @@ export function TerminalOverlay() {
   const [lines, setLines] = useState<TerminalLine[]>([
     {
       type: "system",
-      text: "ASH-TROIDS Terminal v1.0 — Type 'help' for commands.",
+      text: "ASH-TEROIDS Terminal v1.0 — Type 'help' for commands.",
     },
   ]);
   const [input, setInput] = useState("");

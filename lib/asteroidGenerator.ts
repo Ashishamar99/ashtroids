@@ -1,7 +1,7 @@
 /**
  * Procedural asteroid texture generator.
- * Renders a realistic-looking rocky asteroid onto an offscreen canvas
- * with craters, surface noise, directional lighting, and shadow.
+ * Renders a jagged, irregular rocky asteroid — NOT a planet.
+ * Uses high-roughness boundary noise, deep craters, and harsh lighting.
  */
 
 interface AsteroidGenOptions {
@@ -33,7 +33,7 @@ function fbm(x: number, y: number, seed: number, octaves: number): number {
   for (let i = 0; i < octaves; i++) {
     value += amplitude * noise2D(x * frequency, y * frequency, seed + i * 100);
     amplitude *= 0.5;
-    frequency *= 2;
+    frequency *= 2.2;
   }
   return value;
 }
@@ -43,8 +43,8 @@ export function generateAsteroidTexture(options: AsteroidGenOptions): string {
     size,
     seed,
     baseColor,
-    craterCount = 8,
-    roughness = 0.6,
+    craterCount = 12,
+    roughness = 1.0,
     lightAngle = -0.8,
   } = options;
 
@@ -55,7 +55,7 @@ export function generateAsteroidTexture(options: AsteroidGenOptions): string {
 
   const cx = size / 2;
   const cy = size / 2;
-  const radius = size * 0.42;
+  const baseRadius = size * 0.38;
   const rng = seededRandom(seed);
 
   const imageData = ctx.createImageData(size, size);
@@ -64,27 +64,42 @@ export function generateAsteroidTexture(options: AsteroidGenOptions): string {
   const lightX = Math.cos(lightAngle);
   const lightY = Math.sin(lightAngle);
 
-  // Irregular shape boundary using noise
-  function getRadius(angle: number): number {
-    const n = fbm(
-      Math.cos(angle) * 2,
-      Math.sin(angle) * 2,
-      seed,
-      4
-    );
-    return radius * (0.75 + n * roughness * 0.5);
+  // Pre-compute the jagged boundary as a lookup table (angle -> radius)
+  const BOUNDARY_SAMPLES = 256;
+  const boundaryRadii = new Float32Array(BOUNDARY_SAMPLES);
+  for (let i = 0; i < BOUNDARY_SAMPLES; i++) {
+    const angle = (i / BOUNDARY_SAMPLES) * Math.PI * 2;
+    const ax = Math.cos(angle);
+    const ay = Math.sin(angle);
+
+    // Layer multiple noise scales for craggy, irregular shape
+    const n1 = fbm(ax * 1.5, ay * 1.5, seed, 3); // large lumps
+    const n2 = fbm(ax * 4, ay * 4, seed + 200, 3); // medium bumps
+    const n3 = fbm(ax * 9, ay * 9, seed + 500, 2); // fine crag
+
+    const deform = n1 * 0.5 + n2 * 0.25 + n3 * 0.12;
+    boundaryRadii[i] = baseRadius * (0.55 + deform * roughness);
   }
 
-  // Pre-generate craters
+  function getRadius(angle: number): number {
+    const norm = ((angle % (Math.PI * 2)) + Math.PI * 2) % (Math.PI * 2);
+    const t = (norm / (Math.PI * 2)) * BOUNDARY_SAMPLES;
+    const i0 = Math.floor(t) % BOUNDARY_SAMPLES;
+    const i1 = (i0 + 1) % BOUNDARY_SAMPLES;
+    const frac = t - Math.floor(t);
+    return boundaryRadii[i0] * (1 - frac) + boundaryRadii[i1] * frac;
+  }
+
+  // Pre-generate craters — more, deeper, varied
   const craters: { cx: number; cy: number; r: number; depth: number }[] = [];
   for (let i = 0; i < craterCount; i++) {
     const angle = rng() * Math.PI * 2;
-    const dist = rng() * radius * 0.7;
+    const dist = rng() * baseRadius * 0.65;
     craters.push({
       cx: cx + Math.cos(angle) * dist,
       cy: cy + Math.sin(angle) * dist,
-      r: 3 + rng() * (size * 0.08),
-      depth: 0.3 + rng() * 0.5,
+      r: 2 + rng() * (size * 0.07),
+      depth: 0.4 + rng() * 0.6,
     });
   }
 
@@ -98,18 +113,28 @@ export function generateAsteroidTexture(options: AsteroidGenOptions): string {
 
       if (dist > edgeR + 1) continue;
 
-      // Normal of the sphere for lighting
-      const nx = dx / edgeR;
+      // Approximate normal from the irregular surface
+      const rPlus = getRadius(angle + 0.05);
+      const rMinus = getRadius(angle - 0.05);
+      const edgeVariation = (rPlus - rMinus) / (baseRadius * 0.1);
+
+      const nx = dx / edgeR + edgeVariation * 0.3;
       const ny = dy / edgeR;
-      const nz = Math.sqrt(Math.max(0, 1 - nx * nx - ny * ny));
+      const nLen = Math.sqrt(nx * nx + ny * ny + 1);
+      const nnx = nx / nLen;
+      const nny = ny / nLen;
+      const nnz = 1 / nLen;
 
-      // Diffuse lighting
-      let light = nx * lightX + ny * lightY + nz * 0.6;
-      light = Math.max(0.08, Math.min(1, light));
+      // Harsh directional light + weak ambient
+      let light = nnx * lightX + nny * lightY + nnz * 0.4;
+      light = Math.max(0.03, Math.min(1, light));
+      // Boost contrast for rocky feel
+      light = Math.pow(light, 1.3);
 
-      // Surface noise for rocky texture
-      const surfaceNoise = fbm(px * 0.05, py * 0.05, seed, 5);
-      const detailNoise = fbm(px * 0.15, py * 0.15, seed + 50, 3);
+      // Multi-scale surface noise for rocky grain
+      const grain1 = fbm(px * 0.04, py * 0.04, seed, 5);
+      const grain2 = fbm(px * 0.12, py * 0.12, seed + 50, 4);
+      const grain3 = fbm(px * 0.3, py * 0.3, seed + 120, 3);
 
       // Crater influence
       let craterShade = 0;
@@ -117,49 +142,42 @@ export function generateAsteroidTexture(options: AsteroidGenOptions): string {
         const cdx = px - crater.cx;
         const cdy = py - crater.cy;
         const cdist = Math.sqrt(cdx * cdx + cdy * cdy);
-        if (cdist < crater.r) {
+        if (cdist < crater.r * 1.2) {
           const t = cdist / crater.r;
-          // Crater rim is bright, inside is dark
-          if (t > 0.7) {
-            craterShade += (1 - (t - 0.7) / 0.3) * 0.15;
-          } else {
-            craterShade -= crater.depth * (1 - t / 0.7) * 0.3;
+          if (t > 0.85) {
+            // Raised rim
+            craterShade += (1 - (t - 0.85) / 0.35) * 0.2;
+          } else if (t < 0.85) {
+            // Dark interior
+            craterShade -= crater.depth * (1 - t / 0.85) * 0.4;
           }
-          // Crater rim highlight on light side
-          const rimNx = cdx / crater.r;
-          const rimLight = rimNx * lightX + (cdy / crater.r) * lightY;
-          if (t > 0.6 && t < 0.9) {
-            craterShade += Math.max(0, rimLight) * 0.2;
+          // Directional rim highlight
+          const rimNx = cdx / Math.max(crater.r, 1);
+          const rimLight = rimNx * lightX + (cdy / Math.max(crater.r, 1)) * lightY;
+          if (t > 0.6 && t < 1.0) {
+            craterShade += Math.max(0, rimLight) * 0.25;
           }
         }
       }
 
-      const colorVariation = surfaceNoise * 0.3 + detailNoise * 0.15;
-      const totalLight = light + craterShade + colorVariation - 0.2;
-      const clamped = Math.max(0.05, Math.min(1, totalLight));
+      const colorNoise = grain1 * 0.25 + grain2 * 0.15 + grain3 * 0.08;
+      const totalLight = light + craterShade + colorNoise - 0.15;
+      const clamped = Math.max(0.02, Math.min(1, totalLight));
 
       let r = baseColor[0] * clamped;
       let g = baseColor[1] * clamped;
       let b = baseColor[2] * clamped;
 
-      // Subtle color variation across the surface
-      r += (surfaceNoise - 0.5) * 15;
-      g += (surfaceNoise - 0.5) * 10;
-      b += (detailNoise - 0.5) * 8;
+      // Color variation across surface
+      r += (grain1 - 0.5) * 20;
+      g += (grain2 - 0.5) * 15;
+      b += (grain3 - 0.5) * 10;
 
-      // Edge darkening (limb darkening)
-      const edgeFade = dist / edgeR;
-      if (edgeFade > 0.85) {
-        const fade = 1 - (edgeFade - 0.85) / 0.15;
-        r *= fade;
-        g *= fade;
-        b *= fade;
-      }
-
-      // Anti-aliased edge
+      // Harsh edge — no soft limb darkening (asteroids aren't atmosphered)
+      // Just a sharp falloff at the boundary
       let alpha = 255;
-      if (dist > edgeR - 1) {
-        alpha = Math.max(0, Math.min(255, (edgeR + 1 - dist) * 128));
+      if (dist > edgeR - 1.5) {
+        alpha = Math.max(0, Math.min(255, (edgeR + 0.5 - dist) * 170));
       }
 
       const idx = (py * size + px) * 4;
@@ -174,21 +192,20 @@ export function generateAsteroidTexture(options: AsteroidGenOptions): string {
   return canvas.toDataURL("image/png");
 }
 
-// Asteroid color palettes matching the types
 const ASTEROID_BASE_COLORS: Record<string, [number, number, number]> = {
-  metallic: [145, 155, 170],
-  lava: [160, 90, 60],
-  ice: [140, 180, 200],
-  glowing: [130, 110, 160],
-  rocky: [120, 100, 80],
+  metallic: [130, 135, 145],
+  lava: [140, 80, 50],
+  ice: [125, 155, 170],
+  glowing: [115, 95, 135],
+  rocky: [110, 90, 70],
 };
 
 const ASTEROID_CRATER_COUNTS: Record<string, number> = {
-  metallic: 6,
-  lava: 4,
-  ice: 5,
-  glowing: 3,
-  rocky: 10,
+  metallic: 10,
+  lava: 8,
+  ice: 7,
+  glowing: 6,
+  rocky: 14,
 };
 
 export function generateProjectAsteroid(
@@ -203,11 +220,11 @@ export function generateProjectAsteroid(
   }
 
   return generateAsteroidTexture({
-    size: pixelSize * 2, // 2x for retina
+    size: pixelSize * 2,
     seed: Math.abs(hash),
     baseColor: ASTEROID_BASE_COLORS[type] || ASTEROID_BASE_COLORS.rocky,
-    craterCount: ASTEROID_CRATER_COUNTS[type] || 8,
-    roughness: type === "ice" ? 0.3 : type === "metallic" ? 0.4 : 0.6,
+    craterCount: ASTEROID_CRATER_COUNTS[type] || 12,
+    roughness: type === "ice" ? 0.7 : type === "metallic" ? 0.8 : 1.0,
     lightAngle: -0.7 + (Math.abs(hash) % 100) / 200,
   });
 }
