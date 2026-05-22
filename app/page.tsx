@@ -11,7 +11,7 @@ import { LoadingScreen } from "@/components/ui/LoadingScreen";
 import { useKeySequence } from "@/hooks/useKeySequence";
 import { useMobileDetect } from "@/hooks/useMobileDetect";
 import { useStore } from "@/lib/store";
-import { getStaticProjects } from "@/lib/projects";
+import { getStaticProjects, loadProjects } from "@/lib/projects";
 
 const AsteroidsGame = dynamic(
   () =>
@@ -32,7 +32,9 @@ export default function Home() {
   useMobileDetect();
 
   useEffect(() => {
+    // Show bundled config immediately, then refresh from live config
     setProjects(getStaticProjects());
+    loadProjects().then(setProjects);
   }, [setProjects]);
 
   const handleGameActivate = useCallback(() => {

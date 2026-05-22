@@ -1,5 +1,4 @@
-import type { Project, AshteroidsConfig } from "@/data/projects";
-import configData from "@/data/ashteroids.json";
+import type { Project, AshteroidsConfig, RepoConfig } from "@/data/projects";
 
 export interface GitHubRepo {
   name: string;
@@ -38,13 +37,14 @@ const LANGUAGE_TO_TECH: Record<string, string[]> = {
 };
 
 function slugify(name: string): string {
-  return name.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
+  return name
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-|-$/g, "");
 }
 
 function titleCase(name: string): string {
-  return name
-    .replace(/[-_]/g, " ")
-    .replace(/\b\w/g, (c) => c.toUpperCase());
+  return name.replace(/[-_]/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
 }
 
 function inferOrbit(stars: number, isPrivate: boolean): Project["orbit"] {
@@ -79,16 +79,45 @@ function inferCategory(
   return "flagship";
 }
 
+/** Build a project from config alone (no GitHub API data). */
+function projectFromConfig(name: string, rc: RepoConfig): Project {
+  const username = "Ashishamar99";
+  const showLink = rc.showLink ?? true;
+  const links: { label: string; url: string }[] = [];
+  if (showLink) {
+    links.push({ label: "GitHub", url: `https://github.com/${username}/${name}` });
+  }
+
+  return {
+    slug: slugify(name),
+    title: rc.title || titleCase(name),
+    tagline: rc.tagline || "A project on GitHub",
+    description: rc.description || `${titleCase(name)} — a software project.`,
+    techStack: rc.techStack || [],
+    category: rc.category || "flagship",
+    orbit: rc.orbit || "mid",
+    asteroidType: rc.asteroidType || "rocky",
+    size: rc.size || 2,
+    links,
+    deployUrl: rc.deployUrl,
+    isPrivate: false,
+    showLink,
+  };
+}
+
 export function mergeProjects(
+  config: AshteroidsConfig,
   repos: GitHubRepo[] | null
 ): Project[] {
-  const config = configData as AshteroidsConfig;
   const projects: Project[] = [];
+  const handledRepos = new Set<string>();
 
+  // Merge GitHub repos with config overrides
   if (repos) {
     for (const repo of repos) {
-      const repoConfig = config.repos[repo.name];
-      if (!repoConfig?.enabled) continue;
+      const rc = config.repos[repo.name];
+      if (!rc?.enabled) continue;
+      handledRepos.add(repo.name);
 
       const year = repo.created_at
         ? new Date(repo.created_at).getFullYear().toString()
@@ -99,42 +128,49 @@ export function mergeProjects(
         : [];
 
       const links: { label: string; url: string }[] = [];
-      const showLink = repoConfig.showLink ?? !repo.private;
+      const showLink = rc.showLink ?? !repo.private;
       if (showLink) {
         links.push({ label: "GitHub", url: repo.html_url });
       }
 
       projects.push({
         slug: slugify(repo.name),
-        title: repoConfig.title || titleCase(repo.name),
-        tagline:
-          repoConfig.tagline || repo.description || "A project on GitHub",
+        title: rc.title || titleCase(repo.name),
+        tagline: rc.tagline || repo.description || "A project on GitHub",
         description:
-          repoConfig.description ||
+          rc.description ||
           repo.description ||
           `${titleCase(repo.name)} — a ${repo.language || "software"} project.`,
-        techStack: repoConfig.techStack || autoTech,
+        techStack: rc.techStack || autoTech,
         category:
-          repoConfig.category ||
-          inferCategory(repo.topics || [], repo.language),
-        orbit: repoConfig.orbit || inferOrbit(repo.stargazers_count, repo.private),
+          rc.category || inferCategory(repo.topics || [], repo.language),
+        orbit: rc.orbit || inferOrbit(repo.stargazers_count, repo.private),
         asteroidType:
-          repoConfig.asteroidType ||
+          rc.asteroidType ||
           (repo.language && LANGUAGE_TO_TYPE[repo.language]) ||
           "rocky",
-        size: repoConfig.size || inferSize(repo.stargazers_count),
+        size: rc.size || inferSize(repo.stargazers_count),
         links,
         year,
+        deployUrl: rc.deployUrl,
         isPrivate: repo.private,
         showLink,
       });
     }
   }
 
+  // Any enabled repos NOT in the GitHub data — build from config alone
+  for (const [name, rc] of Object.entries(config.repos)) {
+    if (!rc.enabled || handledRepos.has(name)) continue;
+    projects.push(projectFromConfig(name, rc));
+  }
+
+  // Manual projects
   for (const manual of config.manualProjects) {
     projects.push({
       ...manual,
       links: manual.links || [],
+      deployUrl: manual.deployUrl,
       isPrivate: false,
       showLink: true,
     });
@@ -143,7 +179,22 @@ export function mergeProjects(
   return projects;
 }
 
-/** Fallback for when no GitHub data is available (static build, client-side) */
+/** Load config at runtime (client-side) and build projects without GitHub API. */
+export async function loadProjects(): Promise<Project[]> {
+  try {
+    const res = await fetch("/api/config");
+    const config: AshteroidsConfig = await res.json();
+    return mergeProjects(config, null);
+  } catch {
+    // Fallback to bundled config
+    const configData = await import("@/data/ashteroids.json");
+    return mergeProjects(configData as unknown as AshteroidsConfig, null);
+  }
+}
+
+/** Synchronous fallback using bundled config (for SSR / initial load). */
 export function getStaticProjects(): Project[] {
-  return mergeProjects(null);
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
+  const configData = require("@/data/ashteroids.json") as AshteroidsConfig;
+  return mergeProjects(configData, null);
 }

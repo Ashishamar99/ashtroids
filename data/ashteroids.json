@@ -4,13 +4,20 @@
     "ashtroids": {
       "enabled": true,
       "orbit": "inner",
-      "category": "flagship",
+      "category": "startup",
       "asteroidType": "metallic",
       "size": 5,
       "title": "Ash-teroids",
       "tagline": "Interactive space-themed portfolio",
       "description": "An interactive universe of projects, experiments, and ideas — orbiting one developer. Built with Next.js, Framer Motion, and procedurally generated asteroid textures.",
       "showLink": true
+    },
+    "Shaadi-Flow": {
+      "enabled": true,
+      "size": 5
+    },
+    "My-Coffee-Breaks": {
+      "enabled": true
     }
   },
   "manualProjects": [
@@ -19,7 +26,13 @@
       "title": "Home Media Server",
       "tagline": "Self-hosted streaming infrastructure on Linux",
       "description": "A complete self-hosted media stack: Plex, Sonarr, Radarr, Prowlarr, and qBittorrent running on a Linux server with automated downloads and organization.",
-      "techStack": ["Linux", "Docker", "Nginx", "Plex", "Automation"],
+      "techStack": [
+        "Linux",
+        "Docker",
+        "Nginx",
+        "Plex",
+        "Automation"
+      ],
       "category": "infra",
       "orbit": "mid",
       "asteroidType": "ice",

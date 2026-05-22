@@ -23,6 +23,15 @@ export default function AdminPage() {
   const [editingManual, setEditingManual] = useState<number | null>(null);
 
   useEffect(() => {
+    document.documentElement.style.overflow = "auto";
+    document.body.style.overflow = "auto";
+    return () => {
+      document.documentElement.style.overflow = "";
+      document.body.style.overflow = "";
+    };
+  }, []);
+
+  useEffect(() => {
     Promise.all([
       fetch("/api/auth/status").then((r) => r.json()),
       fetch("/api/config").then((r) => r.json()),
@@ -403,6 +412,18 @@ export default function AdminPage() {
                             multiline
                           />
                         </div>
+                        <div className="mt-3">
+                          <TextField
+                            label="Deploy URL"
+                            value={rc?.deployUrl || ""}
+                            placeholder="https://your-app.vercel.app"
+                            onChange={(v) =>
+                              updateRepoConfig(repo.name, {
+                                deployUrl: v || undefined,
+                              })
+                            }
+                          />
+                        </div>
                         <div className="mt-3 flex items-center gap-3">
                           <label className="flex items-center gap-2 cursor-pointer">
                             <input
@@ -554,12 +575,18 @@ export default function AdminPage() {
                           }
                         />
                       </div>
-                      <div className="mt-3">
+                      <div className="grid grid-cols-2 gap-3 mt-3">
                         <TextField
                           label="Year"
                           value={project.year || ""}
                           onChange={(v) => updateManual(i, { year: v || undefined })}
                           placeholder="e.g. 2024"
+                        />
+                        <TextField
+                          label="Deploy URL"
+                          value={project.deployUrl || ""}
+                          onChange={(v) => updateManual(i, { deployUrl: v || undefined })}
+                          placeholder="https://your-app.vercel.app"
                         />
                       </div>
                     </div>

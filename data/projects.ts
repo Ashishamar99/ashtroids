@@ -11,6 +11,7 @@ export interface Project {
   links?: { label: string; url: string }[];
   image?: string;
   year?: string;
+  deployUrl?: string;
   isPrivate?: boolean;
   showLink?: boolean;
 }
@@ -26,10 +27,12 @@ export type RepoConfig = {
   description?: string;
   techStack?: string[];
   showLink?: boolean;
+  deployUrl?: string;
 };
 
 export type ManualProject = Omit<Project, "links" | "isPrivate"> & {
   links?: { label: string; url: string }[];
+  deployUrl?: string;
 };
 
 export interface AshteroidsConfig {

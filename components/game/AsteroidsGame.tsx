@@ -1,6 +1,13 @@
 "use client";
 import { useEffect, useRef, useState, useCallback } from "react";
 import { motion } from "framer-motion";
+import {
+  playShoot,
+  playHitNormal,
+  playHitBonus,
+  startThrust,
+  stopThrust,
+} from "@/lib/gameAudio";
 
 interface Entity {
   x: number;
@@ -16,8 +23,18 @@ interface Bullet extends Entity {
 }
 
 interface GameAsteroid extends Entity {
-  isProject: boolean;
-  label?: string;
+  type: "normal" | "bonus";
+  flash: number;
+}
+
+interface Particle {
+  x: number;
+  y: number;
+  dx: number;
+  dy: number;
+  life: number;
+  color: string;
+  size: number;
 }
 
 interface AsteroidsGameProps {
@@ -33,9 +50,11 @@ export function AsteroidsGame({ onExit }: AsteroidsGameProps) {
     ship: { x: 0, y: 0, dx: 0, dy: 0, size: 12, rotation: 0 } as Entity,
     bullets: [] as Bullet[],
     asteroids: [] as GameAsteroid[],
+    particles: [] as Particle[],
     keys: new Set<string>(),
     score: 0,
-    lives: 3,
+    lastBonusSpawn: 0,
+    thrusting: false,
   });
 
   const initGame = useCallback(() => {
@@ -54,23 +73,14 @@ export function AsteroidsGame({ onExit }: AsteroidsGameProps) {
       rotation: -Math.PI / 2,
     };
     game.bullets = [];
+    game.particles = [];
     game.score = 0;
-    game.lives = 3;
+    game.lastBonusSpawn = performance.now();
+    game.thrusting = false;
 
     game.asteroids = [];
-    const projectNames = ["Ripple", "Shaadi", "AI Lab"];
-    for (let i = 0; i < 8; i++) {
-      const isProject = i < 3;
-      game.asteroids.push({
-        x: Math.random() * w,
-        y: Math.random() * h,
-        dx: (Math.random() - 0.5) * 1.5,
-        dy: (Math.random() - 0.5) * 1.5,
-        size: isProject ? 30 : 15 + Math.random() * 20,
-        rotation: Math.random() * Math.PI * 2,
-        isProject,
-        label: isProject ? projectNames[i] : undefined,
-      });
+    for (let i = 0; i < 5; i++) {
+      game.asteroids.push(spawnNormal(w, h));
     }
   }, []);
 
@@ -85,7 +95,6 @@ export function AsteroidsGame({ onExit }: AsteroidsGameProps) {
     runningRef.current = true;
     initGame();
 
-    // Fill with solid background immediately so canvas isn't transparent
     ctx.fillStyle = "#020010";
     ctx.fillRect(0, 0, canvas.width, canvas.height);
 
@@ -94,6 +103,10 @@ export function AsteroidsGame({ onExit }: AsteroidsGameProps) {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === "Escape") {
         runningRef.current = false;
+        if (game.thrusting) {
+          stopThrust();
+          game.thrusting = false;
+        }
         onExit();
         return;
       }
@@ -110,6 +123,7 @@ export function AsteroidsGame({ onExit }: AsteroidsGameProps) {
           rotation: 0,
           life: 60,
         });
+        playShoot();
       }
     };
 
@@ -128,16 +142,28 @@ export function AsteroidsGame({ onExit }: AsteroidsGameProps) {
       const w = canvas.width;
       const h = canvas.height;
       const ship = game.ship;
+      const now = performance.now();
 
+      // Ship controls
       if (game.keys.has("ArrowLeft") || game.keys.has("a")) {
         ship.rotation -= 0.06;
       }
       if (game.keys.has("ArrowRight") || game.keys.has("d")) {
         ship.rotation += 0.06;
       }
-      if (game.keys.has("ArrowUp") || game.keys.has("w")) {
+
+      const wantsThrust =
+        game.keys.has("ArrowUp") || game.keys.has("w");
+      if (wantsThrust) {
         ship.dx += Math.cos(ship.rotation) * 0.12;
         ship.dy += Math.sin(ship.rotation) * 0.12;
+        if (!game.thrusting) {
+          startThrust();
+          game.thrusting = true;
+        }
+      } else if (game.thrusting) {
+        stopThrust();
+        game.thrusting = false;
       }
 
       ship.dx *= 0.99;
@@ -145,6 +171,7 @@ export function AsteroidsGame({ onExit }: AsteroidsGameProps) {
       ship.x = (ship.x + ship.dx + w) % w;
       ship.y = (ship.y + ship.dy + h) % h;
 
+      // Bullets
       game.bullets.forEach((b) => {
         b.x += b.dx;
         b.y += b.dy;
@@ -154,45 +181,88 @@ export function AsteroidsGame({ onExit }: AsteroidsGameProps) {
         (b) => b.life > 0 && b.x > 0 && b.x < w && b.y > 0 && b.y < h
       );
 
+      // Asteroids
       game.asteroids.forEach((a) => {
         a.x = (a.x + a.dx + w) % w;
         a.y = (a.y + a.dy + h) % h;
-        a.rotation += 0.01;
+        a.rotation += a.type === "bonus" ? 0.03 : 0.01;
+        if (a.flash > 0) a.flash -= 0.05;
       });
 
+      // Particles
+      game.particles.forEach((p) => {
+        p.x += p.dx;
+        p.y += p.dy;
+        p.life -= 0.02;
+        p.dx *= 0.98;
+        p.dy *= 0.98;
+      });
+      game.particles = game.particles.filter((p) => p.life > 0);
+
+      // Bullet-asteroid collision
       for (let bi = game.bullets.length - 1; bi >= 0; bi--) {
         const b = game.bullets[bi];
         for (let ai = game.asteroids.length - 1; ai >= 0; ai--) {
           const a = game.asteroids[ai];
           const dist = Math.hypot(b.x - a.x, b.y - a.y);
           if (dist < a.size) {
-            if (!a.isProject) {
-              game.bullets.splice(bi, 1);
+            game.bullets.splice(bi, 1);
+
+            if (a.type === "bonus") {
+              game.asteroids.splice(ai, 1);
+              game.score += 50;
+              playHitBonus();
+              spawnExplosion(game.particles, a.x, a.y, "#40e0ff", 12);
+            } else {
               game.asteroids.splice(ai, 1);
               game.score += 10;
-              setScore(game.score);
+              playHitNormal();
+              spawnExplosion(game.particles, a.x, a.y, "#ff6b35", 6);
+
               if (a.size > 15) {
                 for (let k = 0; k < 2; k++) {
                   game.asteroids.push({
                     x: a.x,
                     y: a.y,
-                    dx: (Math.random() - 0.5) * 2,
-                    dy: (Math.random() - 0.5) * 2,
+                    dx: (Math.random() - 0.5) * 2.5,
+                    dy: (Math.random() - 0.5) * 2.5,
                     size: a.size * 0.6,
                     rotation: Math.random() * Math.PI * 2,
-                    isProject: false,
+                    type: "normal",
+                    flash: 0,
                   });
                 }
               }
             }
+
+            setScore(game.score);
             break;
           }
         }
       }
 
-      // Draw
+      // Spawn logic
+      if (game.asteroids.filter((a) => a.type === "normal").length < 4) {
+        game.asteroids.push(spawnNormal(w, h));
+      }
+      if (now - game.lastBonusSpawn > 15000) {
+        game.asteroids.push(spawnBonus(w, h));
+        game.lastBonusSpawn = now;
+      }
+
+      // --- DRAW ---
       ctx.fillStyle = "#020010";
       ctx.fillRect(0, 0, w, h);
+
+      // Particles
+      game.particles.forEach((p) => {
+        ctx.globalAlpha = Math.max(0, p.life);
+        ctx.fillStyle = p.color;
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+        ctx.fill();
+      });
+      ctx.globalAlpha = 1;
 
       // Ship
       ctx.save();
@@ -208,11 +278,11 @@ export function AsteroidsGame({ onExit }: AsteroidsGameProps) {
       ctx.closePath();
       ctx.stroke();
 
-      if (game.keys.has("ArrowUp") || game.keys.has("w")) {
+      if (wantsThrust) {
         ctx.strokeStyle = "#ff6b35";
         ctx.beginPath();
         ctx.moveTo(-ship.size * 0.5, -ship.size * 0.2);
-        ctx.lineTo(-ship.size * 0.9 - Math.random() * 4, 0);
+        ctx.lineTo(-ship.size * 0.9 - Math.random() * 6, 0);
         ctx.lineTo(-ship.size * 0.5, ship.size * 0.2);
         ctx.stroke();
       }
@@ -220,11 +290,14 @@ export function AsteroidsGame({ onExit }: AsteroidsGameProps) {
 
       // Bullets
       ctx.fillStyle = "#00ff41";
+      ctx.shadowColor = "#00ff41";
+      ctx.shadowBlur = 4;
       game.bullets.forEach((b) => {
         ctx.beginPath();
         ctx.arc(b.x, b.y, b.size, 0, Math.PI * 2);
         ctx.fill();
       });
+      ctx.shadowBlur = 0;
 
       // Asteroids
       game.asteroids.forEach((a) => {
@@ -232,17 +305,49 @@ export function AsteroidsGame({ onExit }: AsteroidsGameProps) {
         ctx.translate(a.x, a.y);
         ctx.rotate(a.rotation);
 
-        if (a.isProject) {
-          ctx.strokeStyle = "#6b8db5";
+        if (a.type === "bonus") {
+          // Cyan glowing bonus asteroid
+          ctx.strokeStyle = "#40e0ff";
           ctx.lineWidth = 2;
-          ctx.shadowColor = "#6b8db5";
-          ctx.shadowBlur = 8;
+          ctx.shadowColor = "#40e0ff";
+          ctx.shadowBlur = a.flash > 0 ? 20 : 10;
 
-          const sides = 6;
+          const sides = 5;
           ctx.beginPath();
           for (let i = 0; i <= sides; i++) {
             const angle = (i / sides) * Math.PI * 2;
-            const r = a.size * (0.9 + Math.sin(angle * 3) * 0.1);
+            const r = a.size * (0.85 + Math.sin(angle * 2 + a.rotation * 3) * 0.15);
+            const px = Math.cos(angle) * r;
+            const py = Math.sin(angle) * r;
+            if (i === 0) ctx.moveTo(px, py);
+            else ctx.lineTo(px, py);
+          }
+          ctx.closePath();
+          ctx.stroke();
+
+          // Inner glow
+          ctx.fillStyle = "rgba(64, 224, 255, 0.08)";
+          ctx.fill();
+          ctx.shadowBlur = 0;
+
+          ctx.rotate(-a.rotation);
+          ctx.fillStyle = "#40e0ff";
+          ctx.font = "7px monospace";
+          ctx.textAlign = "center";
+          ctx.fillText("+50", 0, a.size + 12);
+        } else {
+          // Orange normal asteroid
+          ctx.strokeStyle = "#ff6b35";
+          ctx.lineWidth = 1.2;
+          ctx.shadowColor = "#ff6b35";
+          ctx.shadowBlur = a.flash > 0 ? 12 : 0;
+
+          const sides = 7;
+          ctx.beginPath();
+          for (let i = 0; i <= sides; i++) {
+            const angle = (i / sides) * Math.PI * 2;
+            const r =
+              a.size * (0.75 + Math.sin(angle * 2.5 + a.rotation) * 0.25);
             const px = Math.cos(angle) * r;
             const py = Math.sin(angle) * r;
             if (i === 0) ctx.moveTo(px, py);
@@ -251,67 +356,10 @@ export function AsteroidsGame({ onExit }: AsteroidsGameProps) {
           ctx.closePath();
           ctx.stroke();
           ctx.shadowBlur = 0;
-
-          if (a.label) {
-            ctx.rotate(-a.rotation);
-            ctx.fillStyle = "#6b8db5";
-            ctx.font = "9px monospace";
-            ctx.textAlign = "center";
-            ctx.fillText(a.label, 0, a.size + 14);
-            ctx.fillStyle = "#6b8db540";
-            ctx.font = "7px monospace";
-            ctx.fillText("[SHIELDED]", 0, a.size + 24);
-          }
-        } else {
-          ctx.strokeStyle = "#4a3728";
-          ctx.lineWidth = 1;
-          const sides = 7;
-          ctx.beginPath();
-          for (let i = 0; i <= sides; i++) {
-            const angle = (i / sides) * Math.PI * 2;
-            const r =
-              a.size * (0.8 + Math.sin(angle * 2.5 + a.rotation) * 0.2);
-            const px = Math.cos(angle) * r;
-            const py = Math.sin(angle) * r;
-            if (i === 0) ctx.moveTo(px, py);
-            else ctx.lineTo(px, py);
-          }
-          ctx.closePath();
-          ctx.stroke();
         }
 
         ctx.restore();
       });
-
-      // Spawn new junk asteroids
-      if (game.asteroids.filter((a) => !a.isProject).length < 3) {
-        const edge = Math.floor(Math.random() * 4);
-        let x = 0,
-          y = 0;
-        if (edge === 0) {
-          x = Math.random() * w;
-          y = 0;
-        } else if (edge === 1) {
-          x = w;
-          y = Math.random() * h;
-        } else if (edge === 2) {
-          x = Math.random() * w;
-          y = h;
-        } else {
-          x = 0;
-          y = Math.random() * h;
-        }
-
-        game.asteroids.push({
-          x,
-          y,
-          dx: (Math.random() - 0.5) * 2,
-          dy: (Math.random() - 0.5) * 2,
-          size: 15 + Math.random() * 20,
-          rotation: Math.random() * Math.PI * 2,
-          isProject: false,
-        });
-      }
 
       animId = requestAnimationFrame(loop);
     };
@@ -320,6 +368,10 @@ export function AsteroidsGame({ onExit }: AsteroidsGameProps) {
 
     return () => {
       runningRef.current = false;
+      if (game.thrusting) {
+        stopThrust();
+        game.thrusting = false;
+      }
       window.removeEventListener("keydown", handleKeyDown);
       window.removeEventListener("keyup", handleKeyUp);
       cancelAnimationFrame(animId);
@@ -345,7 +397,15 @@ export function AsteroidsGame({ onExit }: AsteroidsGameProps) {
 
       <div className="absolute top-6 right-6">
         <button
-          onClick={onExit}
+          onClick={() => {
+            runningRef.current = false;
+            const game = gameRef.current;
+            if (game.thrusting) {
+              stopThrust();
+              game.thrusting = false;
+            }
+            onExit();
+          }}
           className="glass rounded-lg px-4 py-2 text-accent-lava hover:text-primary font-mono text-sm transition-colors"
         >
           [ESC] EXIT GAME
@@ -357,9 +417,67 @@ export function AsteroidsGame({ onExit }: AsteroidsGameProps) {
           ARROWS / WASD to move · SPACE to shoot
         </p>
         <p className="text-[10px] font-mono text-secondary/50 mt-1">
-          Shielded asteroids are projects · Press ESC or click EXIT to quit
+          <span className="text-accent-lava">Orange</span> = +10 pts ·{" "}
+          <span className="text-accent-ice">Cyan</span> = +50 bonus ·
+          ESC to quit
         </p>
       </div>
     </motion.div>
   );
+}
+
+function spawnFromEdge(w: number, h: number): { x: number; y: number } {
+  const edge = Math.floor(Math.random() * 4);
+  if (edge === 0) return { x: Math.random() * w, y: -20 };
+  if (edge === 1) return { x: w + 20, y: Math.random() * h };
+  if (edge === 2) return { x: Math.random() * w, y: h + 20 };
+  return { x: -20, y: Math.random() * h };
+}
+
+function spawnNormal(w: number, h: number): GameAsteroid {
+  const pos = spawnFromEdge(w, h);
+  return {
+    ...pos,
+    dx: (Math.random() - 0.5) * 2,
+    dy: (Math.random() - 0.5) * 2,
+    size: 18 + Math.random() * 22,
+    rotation: Math.random() * Math.PI * 2,
+    type: "normal",
+    flash: 0,
+  };
+}
+
+function spawnBonus(w: number, h: number): GameAsteroid {
+  const pos = spawnFromEdge(w, h);
+  return {
+    ...pos,
+    dx: (Math.random() - 0.5) * 3,
+    dy: (Math.random() - 0.5) * 3,
+    size: 10 + Math.random() * 8,
+    rotation: Math.random() * Math.PI * 2,
+    type: "bonus",
+    flash: 0,
+  };
+}
+
+function spawnExplosion(
+  particles: Particle[],
+  x: number,
+  y: number,
+  color: string,
+  count: number
+) {
+  for (let i = 0; i < count; i++) {
+    const angle = Math.random() * Math.PI * 2;
+    const speed = 1 + Math.random() * 3;
+    particles.push({
+      x,
+      y,
+      dx: Math.cos(angle) * speed,
+      dy: Math.sin(angle) * speed,
+      life: 0.5 + Math.random() * 0.5,
+      color,
+      size: 1 + Math.random() * 2,
+    });
+  }
 }

@@ -4,7 +4,7 @@ import { useEffect } from "react";
 import { motion } from "framer-motion";
 import { ASTEROID_COLORS } from "@/lib/constants";
 import { useStore } from "@/lib/store";
-import { getStaticProjects } from "@/lib/projects";
+import { getStaticProjects, loadProjects } from "@/lib/projects";
 
 export default function ProjectPage() {
   const params = useParams();
@@ -17,6 +17,7 @@ export default function ProjectPage() {
     if (projects.length === 0) {
       setProjects(getStaticProjects());
     }
+    loadProjects().then(setProjects);
   }, [projects.length, setProjects]);
 
   const project = projects.find((p) => p.slug === slug);
@@ -133,6 +134,42 @@ export default function ProjectPage() {
             {project.description}
           </p>
         </motion.div>
+
+        {/* Deploy link — the primary CTA */}
+        {project.deployUrl && (
+          <motion.div
+            className="mt-10"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.35 }}
+          >
+            <h2 className="text-xs font-mono text-secondary/50 tracking-wider mb-3">
+              LAUNCH_PAD
+            </h2>
+            <a
+              href={project.deployUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-3 px-6 py-3 rounded-xl border text-sm font-mono transition-all"
+              style={{
+                background: `linear-gradient(135deg, ${colors.glow}15, ${colors.glow}08)`,
+                borderColor: `${colors.glow}40`,
+                color: colors.glow,
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.borderColor = colors.glow;
+                e.currentTarget.style.boxShadow = `0 0 20px ${colors.glow}30`;
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.borderColor = `${colors.glow}40`;
+                e.currentTarget.style.boxShadow = "none";
+              }}
+            >
+              <span>{project.title} is live — ready for takeoff</span>
+              <span>-&gt;</span>
+            </a>
+          </motion.div>
+        )}
 
         {project.links && project.links.length > 0 && (
           <motion.div
