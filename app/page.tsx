@@ -1,6 +1,6 @@
 "use client";
 import dynamic from "next/dynamic";
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
 import { AnimatePresence } from "framer-motion";
 import { SpaceScene } from "@/components/scene/SpaceScene";
 import { HUD } from "@/components/ui/HUD";
@@ -11,6 +11,7 @@ import { LoadingScreen } from "@/components/ui/LoadingScreen";
 import { useKeySequence } from "@/hooks/useKeySequence";
 import { useMobileDetect } from "@/hooks/useMobileDetect";
 import { useStore } from "@/lib/store";
+import { getStaticProjects } from "@/lib/projects";
 
 const AsteroidsGame = dynamic(
   () =>
@@ -26,8 +27,13 @@ export default function Home() {
   const setGameActive = useStore((s) => s.setGameActive);
   const viewMode = useStore((s) => s.viewMode);
   const terminalOpen = useStore((s) => s.terminalOpen);
+  const setProjects = useStore((s) => s.setProjects);
 
   useMobileDetect();
+
+  useEffect(() => {
+    setProjects(getStaticProjects());
+  }, [setProjects]);
 
   const handleGameActivate = useCallback(() => {
     if (!terminalOpen) {

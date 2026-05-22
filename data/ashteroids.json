@@ -1,0 +1,54 @@
+{
+  "githubUsername": "Ashishamar99",
+  "repos": {
+    "ashtroids": {
+      "enabled": true,
+      "orbit": "inner",
+      "category": "flagship",
+      "asteroidType": "metallic",
+      "size": 5,
+      "title": "Ash-teroids",
+      "tagline": "Interactive space-themed portfolio",
+      "description": "An interactive universe of projects, experiments, and ideas — orbiting one developer. Built with Next.js, Framer Motion, and procedurally generated asteroid textures.",
+      "showLink": true
+    }
+  },
+  "manualProjects": [
+    {
+      "slug": "media-server",
+      "title": "Home Media Server",
+      "tagline": "Self-hosted streaming infrastructure on Linux",
+      "description": "A complete self-hosted media stack: Plex, Sonarr, Radarr, Prowlarr, and qBittorrent running on a Linux server with automated downloads and organization.",
+      "techStack": ["Linux", "Docker", "Nginx", "Plex", "Automation"],
+      "category": "infra",
+      "orbit": "mid",
+      "asteroidType": "ice",
+      "size": 3,
+      "year": "2024"
+    },
+    {
+      "slug": "building-in-public",
+      "title": "Building in Public",
+      "tagline": "Thoughts on shipping, failing, and iterating",
+      "description": "Notes and reflections on the process of building software — what worked, what didn't, and what I'd do differently.",
+      "techStack": [],
+      "category": "thought",
+      "orbit": "deep",
+      "asteroidType": "rocky",
+      "size": 1,
+      "year": "2025"
+    },
+    {
+      "slug": "tech-notes",
+      "title": "Technical Notes",
+      "tagline": "Things I learned the hard way",
+      "description": "A living collection of technical notes, debugging stories, and hard-won knowledge from building real systems.",
+      "techStack": [],
+      "category": "thought",
+      "orbit": "deep",
+      "asteroidType": "rocky",
+      "size": 1,
+      "year": "2024"
+    }
+  ]
+}

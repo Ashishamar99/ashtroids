@@ -1,14 +1,35 @@
 "use client";
 import { useParams, useRouter } from "next/navigation";
+import { useEffect } from "react";
 import { motion } from "framer-motion";
-import { projects } from "@/data/projects";
 import { ASTEROID_COLORS } from "@/lib/constants";
+import { useStore } from "@/lib/store";
+import { getStaticProjects } from "@/lib/projects";
 
 export default function ProjectPage() {
   const params = useParams();
   const router = useRouter();
   const slug = params.slug as string;
+  const projects = useStore((s) => s.projects);
+  const setProjects = useStore((s) => s.setProjects);
+
+  useEffect(() => {
+    if (projects.length === 0) {
+      setProjects(getStaticProjects());
+    }
+  }, [projects.length, setProjects]);
+
   const project = projects.find((p) => p.slug === slug);
+
+  if (projects.length === 0) {
+    return (
+      <div className="min-h-screen bg-space flex items-center justify-center">
+        <p className="text-sm font-mono text-secondary animate-pulse">
+          Loading...
+        </p>
+      </div>
+    );
+  }
 
   if (!project) {
     return (
@@ -32,7 +53,6 @@ export default function ProjectPage() {
 
   return (
     <div className="min-h-screen bg-space">
-      {/* Ambient glow */}
       <div
         className="fixed inset-0 pointer-events-none"
         style={{
@@ -46,7 +66,6 @@ export default function ProjectPage() {
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
       >
-        {/* Back button */}
         <motion.button
           onClick={() => router.push("/")}
           className="flex items-center gap-2 text-secondary hover:text-primary transition-colors font-mono text-xs group mb-12"
@@ -60,7 +79,6 @@ export default function ProjectPage() {
           <span>Return to orbit</span>
         </motion.button>
 
-        {/* Header */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -69,10 +87,14 @@ export default function ProjectPage() {
           <div className="flex items-center gap-3">
             <div
               className="w-3 h-3 rounded-full"
-              style={{ backgroundColor: colors.glow, boxShadow: `0 0 12px ${colors.glow}` }}
+              style={{
+                backgroundColor: colors.glow,
+                boxShadow: `0 0 12px ${colors.glow}`,
+              }}
             />
             <span className="text-[10px] font-mono text-secondary uppercase tracking-wider">
               {project.category} · {project.orbit} orbit
+              {project.isPrivate && " · PRIVATE"}
             </span>
           </div>
 
@@ -80,7 +102,6 @@ export default function ProjectPage() {
           <p className="text-lg text-secondary mt-2">{project.tagline}</p>
         </motion.div>
 
-        {/* Tech stack */}
         {project.techStack.length > 0 && (
           <motion.div
             className="flex flex-wrap gap-2 mt-6"
@@ -99,7 +120,6 @@ export default function ProjectPage() {
           </motion.div>
         )}
 
-        {/* Description */}
         <motion.div
           className="mt-10"
           initial={{ opacity: 0, y: 20 }}
@@ -114,7 +134,6 @@ export default function ProjectPage() {
           </p>
         </motion.div>
 
-        {/* Links */}
         {project.links && project.links.length > 0 && (
           <motion.div
             className="mt-10"
@@ -141,7 +160,6 @@ export default function ProjectPage() {
           </motion.div>
         )}
 
-        {/* Year */}
         {project.year && (
           <motion.div
             className="mt-16 text-center"

@@ -1,8 +1,12 @@
 import { create } from "zustand";
+import type { Project } from "@/data/projects";
 
 export type ViewMode = "orbit" | "recruiter";
 
 interface AshtroidsState {
+  projects: Project[];
+  setProjects: (projects: Project[]) => void;
+
   viewMode: ViewMode;
   setViewMode: (mode: ViewMode) => void;
 
@@ -30,6 +34,9 @@ interface AshtroidsState {
 }
 
 export const useStore = create<AshtroidsState>((set) => ({
+  projects: [],
+  setProjects: (projects) => set({ projects }),
+
   viewMode: "orbit",
   setViewMode: (mode) => set({ viewMode: mode }),
 

@@ -3,7 +3,6 @@ import { useState, useRef, useEffect, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useRouter } from "next/navigation";
 import { useStore } from "@/lib/store";
-import { projects } from "@/data/projects";
 import { profile } from "@/data/profile";
 
 interface TerminalLine {
@@ -24,6 +23,7 @@ const HELP_TEXT = `Available commands:
 export function TerminalOverlay() {
   const terminalOpen = useStore((s) => s.terminalOpen);
   const setTerminalOpen = useStore((s) => s.setTerminalOpen);
+  const projects = useStore((s) => s.projects);
   const router = useRouter();
 
   const [lines, setLines] = useState<TerminalLine[]>([
@@ -184,7 +184,7 @@ export function TerminalOverlay() {
           );
       }
     },
-    [typeOutput, router]
+    [typeOutput, router, projects]
   );
 
   const handleSubmit = (e: React.FormEvent) => {

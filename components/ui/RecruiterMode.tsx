@@ -1,13 +1,13 @@
 "use client";
 import { motion, AnimatePresence } from "framer-motion";
 import { useStore } from "@/lib/store";
-import { projects } from "@/data/projects";
 import { profile } from "@/data/profile";
 import { ProjectCard } from "./ProjectCard";
 
 export function RecruiterMode() {
   const viewMode = useStore((s) => s.viewMode);
   const setViewMode = useStore((s) => s.setViewMode);
+  const projects = useStore((s) => s.projects);
 
   const innerProjects = projects.filter((p) => p.orbit === "inner");
   const midProjects = projects.filter((p) => p.orbit === "mid");

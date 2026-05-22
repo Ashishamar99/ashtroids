@@ -4,9 +4,9 @@ import { StarField } from "./StarField";
 import { Asteroid } from "./Asteroid";
 import { SpaceStation } from "./SpaceStation";
 import { Satellite } from "./Satellite";
-import { projects } from "@/data/projects";
 import { profile } from "@/data/profile";
 import { ORBIT_RADII } from "@/lib/constants";
+import { useStore } from "@/lib/store";
 
 const SATELLITE_COLORS: Record<string, string> = {
   github: "#6e5494",
@@ -18,6 +18,7 @@ const SATELLITE_COLORS: Record<string, string> = {
 export function SpaceScene() {
   const [dims, setDims] = useState({ w: 0, h: 0 });
   const [zoom, setZoom] = useState(1);
+  const projects = useStore((s) => s.projects);
 
   useEffect(() => {
     const update = () =>
