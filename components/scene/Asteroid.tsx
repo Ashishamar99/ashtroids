@@ -1,7 +1,6 @@
 "use client";
 import { useState, useRef, useCallback, useEffect, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { useRouter } from "next/navigation";
 import type { Project } from "@/data/projects";
 import { ASTEROID_COLORS, ORBIT_RADII, ORBIT_SPEEDS } from "@/lib/constants";
 import { useStore } from "@/lib/store";
@@ -39,8 +38,8 @@ export function Asteroid({
   const posRef = useRef({ angle: (index / totalInOrbit) * Math.PI * 2, rot: Math.random() * 360 });
   const [pos, setPos] = useState({ x: 0, y: 0, rot: 0 });
   const animRef = useRef<number>(0);
-  const router = useRouter();
   const setHoveredAsteroid = useStore((s) => s.setHoveredAsteroid);
+  const setActiveProjectSlug = useStore((s) => s.setActiveProjectSlug);
 
   const colors = ASTEROID_COLORS[project.asteroidType];
   const size = ASTEROID_PX_SIZES[project.size] || 64;
@@ -95,12 +94,12 @@ export function Asteroid({
 
   const handleClick = useCallback(() => {
     if (project.orbit === "deep") {
-      router.push("/signals");
+      setActiveProjectSlug(project.slug);
       return;
     }
     setLaunching(true);
-    setTimeout(() => router.push(`/projects/${project.slug}`), 750);
-  }, [project, router]);
+    setTimeout(() => setActiveProjectSlug(project.slug), 750);
+  }, [project, setActiveProjectSlug]);
 
   const handleHoverStart = useCallback(() => {
     setHovered(true);

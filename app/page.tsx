@@ -5,6 +5,7 @@ import { AnimatePresence } from "framer-motion";
 import { SpaceScene } from "@/components/scene/SpaceScene";
 import { HUD } from "@/components/ui/HUD";
 import { AboutOverlay } from "@/components/ui/AboutOverlay";
+import { ProjectOverlay } from "@/components/ui/ProjectOverlay";
 import { RecruiterMode } from "@/components/ui/RecruiterMode";
 import { TerminalOverlay } from "@/components/ui/TerminalOverlay";
 import { LoadingScreen } from "@/components/ui/LoadingScreen";
@@ -57,6 +58,7 @@ export default function Home() {
         <>
           <HUD />
           <AboutOverlay />
+          <ProjectOverlay />
           <RecruiterMode />
           <TerminalOverlay />
 

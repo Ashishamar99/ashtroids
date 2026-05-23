@@ -24,6 +24,7 @@ export function TerminalOverlay() {
   const terminalOpen = useStore((s) => s.terminalOpen);
   const setTerminalOpen = useStore((s) => s.setTerminalOpen);
   const projects = useStore((s) => s.projects);
+  const setActiveProjectSlug = useStore((s) => s.setActiveProjectSlug);
   const router = useRouter();
 
   const [lines, setLines] = useState<TerminalLine[]>([
@@ -132,11 +133,8 @@ export function TerminalOverlay() {
           if (found) {
             typeOutput(`Launching ${found.title}...`);
             setTimeout(() => {
-              if (found.orbit === "deep") {
-                router.push("/signals");
-              } else {
-                router.push(`/projects/${found.slug}`);
-              }
+              setTerminalOpen(false);
+              setActiveProjectSlug(found.slug);
             }, 800);
           } else {
             typeOutput(`Project "${arg}" not found in field.`, "error");
@@ -169,7 +167,10 @@ export function TerminalOverlay() {
           const random =
             navigable[Math.floor(Math.random() * navigable.length)];
           typeOutput(`Randomly selecting... ${random.title}. Launching!`);
-          setTimeout(() => router.push(`/projects/${random.slug}`), 1000);
+          setTimeout(() => {
+            setTerminalOpen(false);
+            setActiveProjectSlug(random.slug);
+          }, 1000);
           break;
         }
 
@@ -184,7 +185,7 @@ export function TerminalOverlay() {
           );
       }
     },
-    [typeOutput, router, projects]
+    [typeOutput, router, projects, setTerminalOpen, setActiveProjectSlug]
   );
 
   const handleSubmit = (e: React.FormEvent) => {

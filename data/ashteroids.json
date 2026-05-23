@@ -18,6 +18,21 @@
     },
     "My-Coffee-Breaks": {
       "enabled": true
+    },
+    "AI-Coffee-Breaks": {
+      "enabled": true
+    },
+    "MediPro": {
+      "enabled": true
+    },
+    "Stega-Hide": {
+      "enabled": true
+    },
+    "Udemy-Sort-o-mate": {
+      "enabled": true
+    },
+    "RSI-Ideathon-POC": {
+      "enabled": true
     }
   },
   "manualProjects": [

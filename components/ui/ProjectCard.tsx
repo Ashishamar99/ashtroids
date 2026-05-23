@@ -1,8 +1,9 @@
 "use client";
-import Link from "next/link";
+import { useCallback } from "react";
 import { motion } from "framer-motion";
 import type { Project } from "@/data/projects";
 import { ASTEROID_COLORS } from "@/lib/constants";
+import { useStore } from "@/lib/store";
 
 interface ProjectCardProps {
   project: Project;
@@ -11,8 +12,11 @@ interface ProjectCardProps {
 
 export function ProjectCard({ project, index }: ProjectCardProps) {
   const colors = ASTEROID_COLORS[project.asteroidType];
-  const isThought = project.orbit === "deep";
-  const href = isThought ? "/signals" : `/projects/${project.slug}`;
+  const setActiveProjectSlug = useStore((s) => s.setActiveProjectSlug);
+
+  const handleClick = useCallback(() => {
+    setActiveProjectSlug(project.slug);
+  }, [project.slug, setActiveProjectSlug]);
 
   return (
     <motion.div
@@ -20,7 +24,7 @@ export function ProjectCard({ project, index }: ProjectCardProps) {
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.4, delay: index * 0.08 }}
     >
-      <Link href={href} className="block group">
+      <button onClick={handleClick} className="block w-full text-left group">
         <div className="p-5 rounded-xl bg-white/3 border border-white/5 hover:border-white/10 hover:bg-white/5 transition-all duration-300">
           <div className="flex items-start justify-between">
             <div>
@@ -67,7 +71,7 @@ export function ProjectCard({ project, index }: ProjectCardProps) {
             </span>
           </div>
         </div>
-      </Link>
+      </button>
     </motion.div>
   );
 }

@@ -17,6 +17,9 @@ interface AshtroidsState {
   aboutOpen: boolean;
   setAboutOpen: (open: boolean) => void;
 
+  activeProjectSlug: string | null;
+  setActiveProjectSlug: (slug: string | null) => void;
+
   gameActive: boolean;
   setGameActive: (active: boolean) => void;
 
@@ -46,6 +49,9 @@ export const useStore = create<AshtroidsState>((set) => ({
 
   aboutOpen: false,
   setAboutOpen: (open) => set({ aboutOpen: open }),
+
+  activeProjectSlug: null,
+  setActiveProjectSlug: (slug) => set({ activeProjectSlug: slug }),
 
   gameActive: false,
   setGameActive: (active) => set({ gameActive: active }),
