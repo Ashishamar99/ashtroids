@@ -14,22 +14,28 @@
     },
     "Shaadi-Flow": {
       "enabled": true,
-      "size": 5
+      "size": 5,
+      "deployUrl": "https://shaadi-flow.vercel.app/"
     },
     "My-Coffee-Breaks": {
       "enabled": true
     },
     "AI-Coffee-Breaks": {
-      "enabled": true
+      "enabled": true,
+      "asteroidType": "lava"
     },
     "MediPro": {
-      "enabled": true
+      "enabled": true,
+      "asteroidType": "metallic",
+      "category": "experiment"
     },
     "Stega-Hide": {
       "enabled": true
     },
     "Udemy-Sort-o-mate": {
-      "enabled": true
+      "enabled": true,
+      "category": "experiment",
+      "asteroidType": "ice"
     },
     "RSI-Ideathon-POC": {
       "enabled": true
