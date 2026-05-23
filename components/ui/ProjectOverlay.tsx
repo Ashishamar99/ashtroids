@@ -3,6 +3,7 @@ import { useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useStore } from "@/lib/store";
 import { ASTEROID_COLORS } from "@/lib/constants";
+import { playOpen, playClose } from "@/lib/uiSounds";
 
 export function ProjectOverlay() {
   const activeSlug = useStore((s) => s.activeProjectSlug);
@@ -15,8 +16,12 @@ export function ProjectOverlay() {
 
   useEffect(() => {
     if (!activeSlug) return;
+    playOpen();
     const handler = (e: KeyboardEvent) => {
-      if (e.key === "Escape") setActiveSlug(null);
+      if (e.key === "Escape") {
+        playClose();
+        setActiveSlug(null);
+      }
     };
     window.addEventListener("keydown", handler);
     return () => window.removeEventListener("keydown", handler);
@@ -35,7 +40,7 @@ export function ProjectOverlay() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            onClick={() => setActiveSlug(null)}
+            onClick={() => { playClose(); setActiveSlug(null); }}
           />
 
           <motion.div
@@ -65,7 +70,7 @@ export function ProjectOverlay() {
               }}
             />
 
-            <div className="relative px-8 py-6">
+            <div className="relative px-10 py-8">
               {/* Nav bar */}
               <div className="flex items-center justify-between">
                 <button

@@ -40,6 +40,9 @@ export function Asteroid({
   const animRef = useRef<number>(0);
   const setHoveredAsteroid = useStore((s) => s.setHoveredAsteroid);
   const setActiveProjectSlug = useStore((s) => s.setActiveProjectSlug);
+  const activeProjectSlug = useStore((s) => s.activeProjectSlug);
+  const aboutOpen = useStore((s) => s.aboutOpen);
+  const overlayOpen = !!activeProjectSlug || aboutOpen;
 
   const colors = ASTEROID_COLORS[project.asteroidType];
   const size = ASTEROID_PX_SIZES[project.size] || 64;
@@ -93,18 +96,20 @@ export function Asteroid({
   }, [speed, launching, orbitRadius, centerX, centerY, index, tumbleSpeed]);
 
   const handleClick = useCallback(() => {
+    if (overlayOpen) return;
     if (project.orbit === "deep") {
       setActiveProjectSlug(project.slug);
       return;
     }
     setLaunching(true);
     setTimeout(() => setActiveProjectSlug(project.slug), 750);
-  }, [project, setActiveProjectSlug]);
+  }, [project, setActiveProjectSlug, overlayOpen]);
 
   const handleHoverStart = useCallback(() => {
+    if (overlayOpen) return;
     setHovered(true);
     setHoveredAsteroid(project.slug);
-  }, [project.slug, setHoveredAsteroid]);
+  }, [project.slug, setHoveredAsteroid, overlayOpen]);
 
   const handleHoverEnd = useCallback(() => {
     setHovered(false);
@@ -115,7 +120,7 @@ export function Asteroid({
 
   return (
     <motion.div
-      className="absolute cursor-pointer select-none"
+      className={`absolute select-none ${overlayOpen ? "cursor-default" : "cursor-pointer"}`}
       style={{
         left: pos.x - size / 2,
         top: pos.y - size / 2,
