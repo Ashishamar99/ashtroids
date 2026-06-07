@@ -180,7 +180,7 @@ export function ProjectOverlay() {
 
               {/* Deploy CTA */}
               {project.deployUrl && (
-                <div style={{ marginTop: 48 }}>
+                <div style={{ marginTop: 34 }}>
                   <a
                     href={project.deployUrl}
                     target="_blank"
@@ -226,7 +226,7 @@ export function ProjectOverlay() {
 
               {/* Other links */}
               {project.links && project.links.length > 0 && (
-                <div style={{ marginTop: 28, display: "flex", gap: 12 }}>
+                <div style={{ marginTop: 20, display: "flex", gap: 12 }}>
                   {project.links.map((link) => (
                     <a
                       key={link.label}

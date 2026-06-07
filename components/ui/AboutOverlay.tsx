@@ -184,16 +184,16 @@ export function AboutOverlay() {
                 >
                   Comm Channels
                 </h3>
-                <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+                <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
                   {profile.socials.map((social) => (
                     <a
                       key={social.label}
                       href={social.url}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="flex items-center justify-between rounded-xl transition-all group"
+                      className="flex items-center justify-between rounded-lg transition-all group"
                       style={{
-                        padding: 16,
+                        padding: "8px 12px",
                         background: "rgba(255,255,255,0.02)",
                         border: "1px solid rgba(255,255,255,0.04)",
                       }}
