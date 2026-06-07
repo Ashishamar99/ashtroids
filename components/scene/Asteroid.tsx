@@ -32,12 +32,10 @@ export function Asteroid({
   zoom,
 }: AsteroidProps) {
   const [hovered, setHovered] = useState(false);
+  const [launching, setLaunching] = useState(false);
   const [textureUrl, setTextureUrl] = useState<string | null>(null);
 
-  const posRef = useRef({
-    angle: (index / totalInOrbit) * Math.PI * 2,
-    rot: Math.random() * 360,
-  });
+  const posRef = useRef({ angle: (index / totalInOrbit) * Math.PI * 2, rot: Math.random() * 360 });
   const [pos, setPos] = useState({ x: 0, y: 0, rot: 0 });
   const animRef = useRef<number>(0);
   const setHoveredAsteroid = useStore((s) => s.setHoveredAsteroid);
@@ -51,6 +49,7 @@ export function Asteroid({
   const orbitRadius = ORBIT_RADII[project.orbit] * 40 * zoom;
   const speed = ORBIT_SPEEDS[project.orbit];
 
+  // Unique tumble speed per asteroid
   const tumbleSpeed = useMemo(() => {
     let h = 0;
     for (let i = 0; i < project.slug.length; i++) {
@@ -59,6 +58,7 @@ export function Asteroid({
     return 3 + (Math.abs(h) % 15);
   }, [project.slug]);
 
+  // Generate texture on mount
   useEffect(() => {
     const url = generateProjectAsteroid(
       project.slug,
@@ -70,6 +70,7 @@ export function Asteroid({
 
   // Orbit + tumble animation loop
   useEffect(() => {
+    if (launching) return;
     let last = performance.now();
 
     const tick = (now: number) => {
@@ -92,11 +93,16 @@ export function Asteroid({
     };
     animRef.current = requestAnimationFrame(tick);
     return () => cancelAnimationFrame(animRef.current);
-  }, [speed, orbitRadius, centerX, centerY, index, tumbleSpeed]);
+  }, [speed, launching, orbitRadius, centerX, centerY, index, tumbleSpeed]);
 
   const handleClick = useCallback(() => {
     if (overlayOpen) return;
-    setActiveProjectSlug(project.slug);
+    if (project.orbit === "deep") {
+      setActiveProjectSlug(project.slug);
+      return;
+    }
+    setLaunching(true);
+    setTimeout(() => setActiveProjectSlug(project.slug), 750);
   }, [project, setActiveProjectSlug, overlayOpen]);
 
   const handleHoverStart = useCallback(() => {
@@ -120,11 +126,31 @@ export function Asteroid({
         top: pos.y - size / 2,
         zIndex: hovered ? 50 : Math.round(pos.y),
       }}
+      animate={
+        launching
+          ? {
+              scale: [1, 1.3, 0.2],
+              opacity: [1, 1, 0],
+              x: [0, 0, window.innerWidth / 2 - pos.x],
+              y: [0, 0, window.innerHeight / 2 - pos.y],
+              filter: [
+                "brightness(1)",
+                "brightness(2.5)",
+                "brightness(4)",
+              ],
+            }
+          : {}
+      }
+      transition={
+        launching
+          ? { duration: 0.75, ease: [0.22, 1, 0.36, 1] }
+          : undefined
+      }
       onHoverStart={handleHoverStart}
       onHoverEnd={handleHoverEnd}
       onClick={handleClick}
     >
-      {/* Subtle highlight on hover */}
+      {/* Subtle highlight on hover — no atmospheric glow (asteroids have no atmosphere) */}
       {hovered && (
         <div
           className="absolute inset-0 pointer-events-none transition-opacity duration-300"
@@ -161,7 +187,7 @@ export function Asteroid({
 
       {/* Hover info card */}
       <AnimatePresence>
-        {hovered && (
+        {hovered && !launching && (
           <motion.div
             className="absolute left-1/2 -translate-x-1/2 glass rounded-lg px-4 py-3 min-w-[220px] text-center pointer-events-none"
             style={{ bottom: size + 16 }}
@@ -201,6 +227,46 @@ export function Asteroid({
       >
         {project.title}
       </p>
+
+      {/* Launch burst */}
+      {launching && (
+        <>
+          <motion.div
+            className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 rounded-full"
+            initial={{ width: size, height: size, opacity: 0.9 }}
+            animate={{ width: size * 5, height: size * 5, opacity: 0 }}
+            transition={{ duration: 0.6 }}
+            style={{
+              background: `radial-gradient(circle, ${colors.glow}, ${colors.emissive}40, transparent)`,
+            }}
+          />
+          {/* Debris particles */}
+          {[...Array(6)].map((_, i) => {
+            const pAngle = (i / 6) * Math.PI * 2;
+            return (
+              <motion.div
+                key={i}
+                className="absolute rounded-full"
+                style={{
+                  width: 3,
+                  height: 3,
+                  background: colors.glow,
+                  left: size / 2,
+                  top: size / 2,
+                }}
+                initial={{ opacity: 0.8 }}
+                animate={{
+                  x: Math.cos(pAngle) * 60,
+                  y: Math.sin(pAngle) * 60,
+                  opacity: 0,
+                  scale: 0,
+                }}
+                transition={{ duration: 0.5, delay: 0.1 }}
+              />
+            );
+          })}
+        </>
+      )}
     </motion.div>
   );
 }
