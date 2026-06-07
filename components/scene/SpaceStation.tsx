@@ -10,12 +10,10 @@ interface SpaceStationProps {
 
 export function SpaceStation({ centerX, centerY }: SpaceStationProps) {
   const [hovered, setHovered] = useState(false);
-  const aboutOpen = useStore((s) => s.aboutOpen);
 
   const handleClick = useCallback(() => {
     const store = useStore.getState();
-    if (store.aboutOpen) return;
-    store.setActiveProjectSlug(null);
+    if (store.aboutOpen || store.activeProjectSlug) return;
     store.setAboutOpen(true);
   }, []);
 
@@ -25,8 +23,7 @@ export function SpaceStation({ centerX, centerY }: SpaceStationProps) {
       style={{
         left: centerX - 30,
         top: centerY - 30,
-        zIndex: 55,
-        pointerEvents: aboutOpen ? "none" : "auto",
+        zIndex: 10,
       }}
       animate={{ y: [0, -4, 0] }}
       transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
