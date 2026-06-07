@@ -10,35 +10,93 @@
       "title": "Ash-teroids",
       "tagline": "Interactive space-themed portfolio",
       "description": "An interactive universe of projects, experiments, and ideas — orbiting one developer. Built with Next.js, Framer Motion, and procedurally generated asteroid textures.",
+      "techStack": ["Next.js", "TypeScript", "Framer Motion", "Tailwind", "Zustand"],
       "showLink": true
     },
     "Shaadi-Flow": {
       "enabled": true,
+      "orbit": "inner",
+      "category": "flagship",
+      "asteroidType": "lava",
       "size": 5,
-      "deployUrl": "https://shaadi-flow.vercel.app/"
+      "title": "Shaadi Flow",
+      "tagline": "Joyful, stress-free wedding logistics",
+      "description": "A wedding planning app that handles the chaos so you don't have to. Guest management with CSV import, family grouping, and RSVP tracking. Route planning with Mapbox clustering to optimize invitation delivery. Timeline builder, budget tracker, and a shared team dashboard — all powered by Supabase and deployed on Vercel.",
+      "techStack": ["React", "TypeScript", "Supabase", "Mapbox", "Vercel"],
+      "deployUrl": "https://shaadi-flow.vercel.app/",
+      "showLink": true
     },
     "My-Coffee-Breaks": {
-      "enabled": true
+      "enabled": true,
+      "orbit": "deep",
+      "category": "experiment",
+      "asteroidType": "rocky",
+      "size": 2,
+      "title": "My Coffee Breaks",
+      "tagline": "Python scripts built for fun between sips",
+      "description": "A collection of small Python utilities written during coffee breaks — random team generators, web scrapers, Windows utilities, and other tools that scratch a quick itch. The kind of code you write because the problem annoyed you enough to solve it in 20 minutes.",
+      "techStack": ["Python", "Web Scraping", "CLI Tools"],
+      "showLink": true
     },
     "AI-Coffee-Breaks": {
       "enabled": true,
-      "asteroidType": "lava"
+      "orbit": "mid",
+      "category": "experiment",
+      "asteroidType": "glowing",
+      "size": 3,
+      "title": "AI Coffee Breaks",
+      "tagline": "5-10 minute AI dev guides for your coffee break",
+      "description": "Bite-sized AI development guides that fit into a coffee break. Each guide is generated, categorized, and tagged for quick consumption. Think of it as a micro-learning feed for developers who want to stay sharp on AI without the time commitment.",
+      "techStack": ["Next.js", "Supabase", "OpenAI", "Gemini"],
+      "showLink": true
     },
     "MediPro": {
       "enabled": true,
+      "orbit": "mid",
+      "category": "experiment",
       "asteroidType": "metallic",
-      "category": "experiment"
+      "size": 3,
+      "title": "MediPro",
+      "tagline": "Voice-to-prescription for doctors, storage for patients",
+      "description": "A web app that lets doctors generate prescriptions by voice and send them as SMS or PDF. Patients get a searchable archive of their prescription history. Built with TypeScript, PostgreSQL, and Docker — designed to reduce the friction of the one thing every doctor does dozens of times a day.",
+      "techStack": ["TypeScript", "PostgreSQL", "Docker", "Voice API"],
+      "showLink": true
     },
     "Stega-Hide": {
-      "enabled": true
+      "enabled": true,
+      "orbit": "mid",
+      "category": "experiment",
+      "asteroidType": "glowing",
+      "size": 2,
+      "title": "Stega-Hide",
+      "tagline": "Hide data inside images using steganography",
+      "description": "A command-line Python tool that hides files inside images using steganography with compression. Drop a file in, get an innocent-looking image out. Built out of curiosity about how data can live where you'd never think to look.",
+      "techStack": ["Python", "Steganography", "Compression", "CLI"],
+      "showLink": true
     },
     "Udemy-Sort-o-mate": {
       "enabled": true,
+      "orbit": "mid",
       "category": "experiment",
-      "asteroidType": "ice"
+      "asteroidType": "ice",
+      "size": 2,
+      "title": "Udemy Sort-o-mate",
+      "tagline": "A bot that filters your Udemy courses by what's actually good",
+      "description": "A Selenium-powered scraper bot that logs into your Udemy account, pulls all your enrolled courses, and filters them by rating, student count, and total hours. Exports to CSV so you can finally find the gems buried in that mountain of free courses you enrolled in at 2AM.",
+      "techStack": ["Python", "Selenium", "Web Scraping", "CSV"],
+      "showLink": true
     },
     "RSI-Ideathon-POC": {
-      "enabled": true
+      "enabled": true,
+      "orbit": "deep",
+      "category": "experiment",
+      "asteroidType": "rocky",
+      "size": 1,
+      "title": "RSI Ideathon POC",
+      "tagline": "Chatbot endpoint proof-of-concept for Ideathon 2022",
+      "description": "A Python-based chatbot API endpoint built as a proof-of-concept for the RSI Ideathon 2022. A hackathon build that explored conversational AI before the LLM wave made everyone a chatbot developer.",
+      "techStack": ["Python", "REST API", "Chatbot"],
+      "showLink": true
     }
   },
   "manualProjects": [
@@ -47,13 +105,7 @@
       "title": "Home Media Server",
       "tagline": "Self-hosted streaming infrastructure on Linux",
       "description": "A complete self-hosted media stack: Plex, Sonarr, Radarr, Prowlarr, and qBittorrent running on a Linux server with automated downloads and organization.",
-      "techStack": [
-        "Linux",
-        "Docker",
-        "Nginx",
-        "Plex",
-        "Automation"
-      ],
+      "techStack": ["Linux", "Docker", "Nginx", "Plex", "Automation"],
       "category": "infra",
       "orbit": "mid",
       "asteroidType": "ice",
