@@ -1,6 +1,6 @@
 "use client";
 import { useState, useRef, useCallback, useEffect, useMemo } from "react";
-import { motion, AnimatePresence, useAnimationControls } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import type { Project } from "@/data/projects";
 import { ASTEROID_COLORS, ORBIT_RADII, ORBIT_SPEEDS } from "@/lib/constants";
 import { useStore } from "@/lib/store";
@@ -32,11 +32,8 @@ export function Asteroid({
   zoom,
 }: AsteroidProps) {
   const [hovered, setHovered] = useState(false);
-  const [launching, setLaunching] = useState(false);
-  const [visible, setVisible] = useState(true);
   const [textureUrl, setTextureUrl] = useState<string | null>(null);
 
-  const controls = useAnimationControls();
   const posRef = useRef({
     angle: (index / totalInOrbit) * Math.PI * 2,
     rot: Math.random() * 360,
@@ -71,24 +68,8 @@ export function Asteroid({
     setTextureUrl(url);
   }, [project.slug, project.asteroidType, size]);
 
-  // When overlay closes, bring asteroid back
-  useEffect(() => {
-    if (!activeProjectSlug && !visible) {
-      setLaunching(false);
-      controls
-        .start({
-          scale: [0, 1.1, 1],
-          opacity: [0, 1, 1],
-          filter: ["brightness(3)", "brightness(1.2)", "brightness(1)"],
-          transition: { duration: 0.5, ease: "easeOut" },
-        })
-        .then(() => setVisible(true));
-    }
-  }, [activeProjectSlug, visible, controls]);
-
   // Orbit + tumble animation loop
   useEffect(() => {
-    if (launching) return;
     let last = performance.now();
 
     const tick = (now: number) => {
@@ -111,28 +92,12 @@ export function Asteroid({
     };
     animRef.current = requestAnimationFrame(tick);
     return () => cancelAnimationFrame(animRef.current);
-  }, [speed, launching, orbitRadius, centerX, centerY, index, tumbleSpeed]);
+  }, [speed, orbitRadius, centerX, centerY, index, tumbleSpeed]);
 
   const handleClick = useCallback(() => {
-    if (overlayOpen || launching) return;
-    if (project.orbit === "deep") {
-      setActiveProjectSlug(project.slug);
-      return;
-    }
-
-    setLaunching(true);
-    setVisible(false);
-
-    // Play burst animation
-    controls.start({
-      scale: [1, 1.5, 0],
-      opacity: [1, 1, 0],
-      filter: ["brightness(1)", "brightness(3)", "brightness(6)"],
-      transition: { duration: 0.6, ease: [0.22, 1, 0.36, 1] },
-    });
-
-    setTimeout(() => setActiveProjectSlug(project.slug), 650);
-  }, [project, setActiveProjectSlug, overlayOpen, launching, controls]);
+    if (overlayOpen) return;
+    setActiveProjectSlug(project.slug);
+  }, [project, setActiveProjectSlug, overlayOpen]);
 
   const handleHoverStart = useCallback(() => {
     if (overlayOpen) return;
@@ -155,7 +120,6 @@ export function Asteroid({
         top: pos.y - size / 2,
         zIndex: hovered ? 50 : Math.round(pos.y),
       }}
-      animate={controls}
       onHoverStart={handleHoverStart}
       onHoverEnd={handleHoverEnd}
       onClick={handleClick}
@@ -197,7 +161,7 @@ export function Asteroid({
 
       {/* Hover info card */}
       <AnimatePresence>
-        {hovered && !launching && (
+        {hovered && (
           <motion.div
             className="absolute left-1/2 -translate-x-1/2 glass rounded-lg px-4 py-3 min-w-[220px] text-center pointer-events-none"
             style={{ bottom: size + 16 }}
@@ -237,45 +201,6 @@ export function Asteroid({
       >
         {project.title}
       </p>
-
-      {/* Launch burst particles */}
-      {launching && (
-        <>
-          <motion.div
-            className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 rounded-full"
-            initial={{ width: size, height: size, opacity: 0.9 }}
-            animate={{ width: size * 6, height: size * 6, opacity: 0 }}
-            transition={{ duration: 0.6 }}
-            style={{
-              background: `radial-gradient(circle, ${colors.glow}, ${colors.emissive}40, transparent)`,
-            }}
-          />
-          {[...Array(8)].map((_, i) => {
-            const pAngle = (i / 8) * Math.PI * 2;
-            return (
-              <motion.div
-                key={i}
-                className="absolute rounded-full"
-                style={{
-                  width: 3,
-                  height: 3,
-                  background: colors.glow,
-                  left: size / 2,
-                  top: size / 2,
-                }}
-                initial={{ opacity: 0.9, scale: 1 }}
-                animate={{
-                  x: Math.cos(pAngle) * 80,
-                  y: Math.sin(pAngle) * 80,
-                  opacity: 0,
-                  scale: 0,
-                }}
-                transition={{ duration: 0.5, delay: 0.05 }}
-              />
-            );
-          })}
-        </>
-      )}
     </motion.div>
   );
 }
