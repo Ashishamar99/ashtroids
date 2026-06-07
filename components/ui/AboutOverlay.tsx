@@ -1,77 +1,159 @@
 "use client";
+import { useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useStore } from "@/lib/store";
 import { profile } from "@/data/profile";
+import { playOpen, playClose } from "@/lib/uiSounds";
 
 export function AboutOverlay() {
   const aboutOpen = useStore((s) => s.aboutOpen);
   const setAboutOpen = useStore((s) => s.setAboutOpen);
 
+  useEffect(() => {
+    if (!aboutOpen) return;
+    playOpen();
+    const handler = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        playClose();
+        setAboutOpen(false);
+      }
+    };
+    window.addEventListener("keydown", handler);
+    return () => window.removeEventListener("keydown", handler);
+  }, [aboutOpen, setAboutOpen]);
+
+  const close = () => {
+    playClose();
+    setAboutOpen(false);
+  };
+
   return (
     <AnimatePresence>
       {aboutOpen && (
         <>
-          {/* Backdrop */}
           <motion.div
             className="fixed inset-0 bg-black/60 z-40"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            onClick={() => setAboutOpen(false)}
+            onClick={close}
           />
 
-          {/* Panel */}
           <motion.div
-            className="fixed right-0 top-0 h-full w-full max-w-lg z-50 glass-strong overflow-y-auto"
+            className="fixed right-0 top-0 h-full w-full max-w-xl z-50 overflow-y-auto overflow-x-hidden"
+            style={{
+              background: "#060018",
+              borderLeft: "1px solid rgba(107,141,181,0.12)",
+            }}
             initial={{ x: "100%" }}
             animate={{ x: 0 }}
             exit={{ x: "100%" }}
             transition={{ type: "spring", damping: 30, stiffness: 300 }}
           >
-            <div className="p-8">
-              {/* Close */}
-              <button
-                onClick={() => setAboutOpen(false)}
-                className="absolute top-6 right-6 text-secondary hover:text-primary transition-colors font-mono text-sm"
-              >
-                [ESC]
-              </button>
+            {/* Top accent bar */}
+            <div
+              className="h-[2px] w-full"
+              style={{
+                background:
+                  "linear-gradient(90deg, transparent, #6b8db5, transparent)",
+              }}
+            />
+
+            {/* Glow */}
+            <div
+              className="absolute top-0 left-0 right-0 h-64 pointer-events-none"
+              style={{
+                background:
+                  "radial-gradient(ellipse at 50% -20%, rgba(107,141,181,0.1) 0%, transparent 70%)",
+              }}
+            />
+
+            <div className="relative px-10 py-8">
+              {/* Nav */}
+              <div className="flex items-center justify-between">
+                <button
+                  onClick={close}
+                  className="flex items-center gap-2 text-secondary/60 hover:text-primary transition-colors font-mono text-[11px] group"
+                >
+                  <span className="group-hover:-translate-x-1 transition-transform">
+                    &lt;-
+                  </span>
+                  <span>Return to orbit</span>
+                </button>
+                <button
+                  onClick={close}
+                  className="text-secondary/40 hover:text-primary transition-colors font-mono text-[11px]"
+                >
+                  ESC
+                </button>
+              </div>
 
               {/* Header */}
               <div className="mt-8">
-                <p className="text-xs font-mono text-accent-glow tracking-wider">
-                  // TRANSMISSION_RECEIVED
+                <div className="flex items-center gap-2 mb-4">
+                  <div
+                    className="w-2 h-2 rounded-full"
+                    style={{
+                      backgroundColor: "#6b8db5",
+                      boxShadow: "0 0 8px #6b8db5",
+                    }}
+                  />
+                  <span className="text-[10px] font-mono text-secondary/50 uppercase tracking-widest">
+                    Transmission Received
+                  </span>
+                </div>
+                <h2 className="text-3xl font-bold" style={{ color: "#f0eef5" }}>
+                  {profile.name}
+                </h2>
+                <p className="text-[15px] text-secondary mt-1.5">
+                  {profile.title}
                 </p>
-                <h2 className="text-3xl font-bold mt-3">{profile.name}</h2>
-                <p className="text-secondary mt-1">{profile.title}</p>
               </div>
 
               {/* Bio */}
+              <div
+                className="mt-8 h-px"
+                style={{
+                  background:
+                    "linear-gradient(90deg, rgba(107,141,181,0.2), transparent)",
+                }}
+              />
               <div className="mt-8 space-y-3">
                 {profile.bio.map((line, i) => (
-                  <p key={i} className="text-primary/80 leading-relaxed">
+                  <p
+                    key={i}
+                    className="text-[13px] text-primary/70 leading-[1.8]"
+                  >
                     {line}
                   </p>
                 ))}
               </div>
 
               {/* Tagline */}
-              <div className="mt-8 border-l-2 border-accent-glow/30 pl-4">
-                <p className="text-sm text-secondary italic">
+              <div
+                className="mt-6 pl-4"
+                style={{ borderLeft: "2px solid rgba(107,141,181,0.2)" }}
+              >
+                <p className="text-sm text-secondary/60 italic">
                   {profile.tagline}
                 </p>
               </div>
 
               {/* Interests */}
-              <div className="mt-8">
-                <h3 className="text-xs font-mono text-secondary tracking-wider mb-3">
-                  SIGNAL_INTERESTS
+              <div className="mt-10">
+                <h3 className="text-[10px] font-mono text-secondary/40 tracking-widest uppercase mb-3">
+                  Signal Interests
                 </h3>
                 <div className="flex flex-wrap gap-2">
                   {profile.interests.map((interest) => (
                     <span
                       key={interest}
-                      className="text-xs px-3 py-1.5 rounded-full bg-white/5 border border-white/5 text-primary/70"
+                      className="text-[11px] px-2.5 py-1 rounded-md font-mono"
+                      style={{
+                        background: "rgba(107,141,181,0.06)",
+                        border: "1px solid rgba(107,141,181,0.12)",
+                        color: "rgba(107,141,181,0.75)",
+                      }}
                     >
                       {interest}
                     </span>
@@ -79,10 +161,19 @@ export function AboutOverlay() {
                 </div>
               </div>
 
+              {/* Divider */}
+              <div
+                className="mt-10 h-px"
+                style={{
+                  background:
+                    "linear-gradient(90deg, rgba(107,141,181,0.15), transparent)",
+                }}
+              />
+
               {/* Socials */}
               <div className="mt-8">
-                <h3 className="text-xs font-mono text-secondary tracking-wider mb-3">
-                  COMM_CHANNELS
+                <h3 className="text-[10px] font-mono text-secondary/40 tracking-widest uppercase mb-3">
+                  Comm Channels
                 </h3>
                 <div className="space-y-2">
                   {profile.socials.map((social) => (
@@ -91,17 +182,33 @@ export function AboutOverlay() {
                       href={social.url}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="flex items-center justify-between p-3 rounded-lg bg-white/3 hover:bg-white/5 border border-white/5 transition-colors group"
+                      className="flex items-center justify-between p-3.5 rounded-xl transition-all group"
+                      style={{
+                        background: "rgba(255,255,255,0.02)",
+                        border: "1px solid rgba(255,255,255,0.04)",
+                      }}
+                      onMouseEnter={(e) => {
+                        e.currentTarget.style.background =
+                          "rgba(255,255,255,0.04)";
+                        e.currentTarget.style.borderColor =
+                          "rgba(107,141,181,0.2)";
+                      }}
+                      onMouseLeave={(e) => {
+                        e.currentTarget.style.background =
+                          "rgba(255,255,255,0.02)";
+                        e.currentTarget.style.borderColor =
+                          "rgba(255,255,255,0.04)";
+                      }}
                     >
                       <div>
-                        <p className="text-sm font-medium text-primary">
+                        <p className="text-sm font-medium text-primary/80 group-hover:text-primary transition-colors">
                           {social.label}
                         </p>
-                        <p className="text-[10px] font-mono text-secondary">
+                        <p className="text-[10px] font-mono text-secondary/40 mt-0.5">
                           {social.transmission}
                         </p>
                       </div>
-                      <span className="text-secondary/40 group-hover:text-accent-glow transition-colors font-mono text-xs">
+                      <span className="text-secondary/30 group-hover:text-accent-glow group-hover:translate-x-0.5 transition-all font-mono text-xs">
                         -&gt;
                       </span>
                     </a>
@@ -110,9 +217,9 @@ export function AboutOverlay() {
               </div>
 
               {/* Contact */}
-              <div className="mt-8 mb-8">
-                <h3 className="text-xs font-mono text-secondary tracking-wider mb-3">
-                  DIRECT_SIGNAL
+              <div className="mt-10 mb-8">
+                <h3 className="text-[10px] font-mono text-secondary/40 tracking-widest uppercase mb-3">
+                  Direct Signal
                 </h3>
                 <a
                   href={`mailto:${profile.email}`}

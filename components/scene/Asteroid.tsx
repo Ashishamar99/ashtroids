@@ -68,6 +68,13 @@ export function Asteroid({
     setTextureUrl(url);
   }, [project.slug, project.asteroidType, size]);
 
+  // Reset launching state when overlay closes
+  useEffect(() => {
+    if (!activeProjectSlug && launching) {
+      setLaunching(false);
+    }
+  }, [activeProjectSlug, launching]);
+
   // Orbit + tumble animation loop
   useEffect(() => {
     if (launching) return;
@@ -139,12 +146,18 @@ export function Asteroid({
                 "brightness(4)",
               ],
             }
-          : {}
+          : {
+              scale: 1,
+              opacity: 1,
+              x: 0,
+              y: 0,
+              filter: "brightness(1)",
+            }
       }
       transition={
         launching
           ? { duration: 0.75, ease: [0.22, 1, 0.36, 1] }
-          : undefined
+          : { duration: 0.5, ease: "easeOut" }
       }
       onHoverStart={handleHoverStart}
       onHoverEnd={handleHoverEnd}

@@ -18,25 +18,25 @@ export const profile = {
   socials: [
     {
       label: "GitHub",
-      url: "https://github.com/ashish",
+      url: "https://github.com/Ashishamar99",
       icon: "github",
       transmission: "Source Code Station",
     },
     {
       label: "LinkedIn",
-      url: "https://linkedin.com/in/ashish",
+      url: "https://www.linkedin.com/in/ashishamar/",
       icon: "linkedin",
       transmission: "Command Center",
     },
     {
       label: "Instagram",
-      url: "https://instagram.com/ashish",
+      url: "https://www.instagram.com/ashish_amar/?hl=en",
       icon: "instagram",
       transmission: "Signal Beacon",
     },
     {
       label: "Resume",
-      url: "/resume.pdf",
+      url: "/Users/aamar/Ashtroid Inc/ashtroids/Ashish_Amar_Latest_Resume (1).pdf",
       icon: "file",
       transmission: "Black Box Recorder",
     },

@@ -11,22 +11,28 @@ interface SpaceStationProps {
 export function SpaceStation({ centerX, centerY }: SpaceStationProps) {
   const [hovered, setHovered] = useState(false);
   const setAboutOpen = useStore((s) => s.setAboutOpen);
+  const setActiveProjectSlug = useStore((s) => s.setActiveProjectSlug);
+  const activeProjectSlug = useStore((s) => s.activeProjectSlug);
+  const aboutOpen = useStore((s) => s.aboutOpen);
+  const overlayOpen = !!activeProjectSlug || aboutOpen;
 
   const handleClick = useCallback(() => {
+    if (overlayOpen) return;
+    setActiveProjectSlug(null);
     setAboutOpen(true);
-  }, [setAboutOpen]);
+  }, [setAboutOpen, setActiveProjectSlug, overlayOpen]);
 
   return (
     <motion.div
-      className="absolute cursor-pointer select-none"
+      className={`absolute select-none ${overlayOpen ? "cursor-default" : "cursor-pointer"}`}
       style={{
         left: centerX - 30,
         top: centerY - 30,
-        zIndex: 40,
+        zIndex: 35,
       }}
       animate={{ y: [0, -4, 0] }}
       transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
-      onHoverStart={() => setHovered(true)}
+      onHoverStart={() => { if (!overlayOpen) setHovered(true); }}
       onHoverEnd={() => setHovered(false)}
       onClick={handleClick}
     >
@@ -105,7 +111,7 @@ export function SpaceStation({ centerX, centerY }: SpaceStationProps) {
 
       {/* Hover tooltip */}
       <AnimatePresence>
-        {hovered && (
+        {hovered && !overlayOpen && (
           <motion.div
             className="absolute left-1/2 -translate-x-1/2 glass rounded-lg px-3 py-2 text-center whitespace-nowrap pointer-events-none"
             style={{ bottom: 72 }}
