@@ -10,29 +10,27 @@ interface SpaceStationProps {
 
 export function SpaceStation({ centerX, centerY }: SpaceStationProps) {
   const [hovered, setHovered] = useState(false);
-  const setAboutOpen = useStore((s) => s.setAboutOpen);
-  const setActiveProjectSlug = useStore((s) => s.setActiveProjectSlug);
-  const activeProjectSlug = useStore((s) => s.activeProjectSlug);
   const aboutOpen = useStore((s) => s.aboutOpen);
-  const overlayOpen = !!activeProjectSlug || aboutOpen;
 
   const handleClick = useCallback(() => {
-    if (aboutOpen) return;
-    setActiveProjectSlug(null);
-    setAboutOpen(true);
-  }, [setAboutOpen, setActiveProjectSlug, aboutOpen]);
+    const store = useStore.getState();
+    if (store.aboutOpen) return;
+    store.setActiveProjectSlug(null);
+    store.setAboutOpen(true);
+  }, []);
 
   return (
     <motion.div
-      className={`absolute select-none ${aboutOpen ? "cursor-default" : "cursor-pointer"}`}
+      className="absolute select-none cursor-pointer"
       style={{
         left: centerX - 30,
         top: centerY - 30,
-        zIndex: activeProjectSlug ? 45 : 35,
+        zIndex: 55,
+        pointerEvents: aboutOpen ? "none" : "auto",
       }}
       animate={{ y: [0, -4, 0] }}
       transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
-      onHoverStart={() => { if (!aboutOpen) setHovered(true); }}
+      onHoverStart={() => setHovered(true)}
       onHoverEnd={() => setHovered(false)}
       onClick={handleClick}
     >
@@ -111,7 +109,7 @@ export function SpaceStation({ centerX, centerY }: SpaceStationProps) {
 
       {/* Hover tooltip */}
       <AnimatePresence>
-        {hovered && !overlayOpen && (
+        {hovered && (
           <motion.div
             className="absolute left-1/2 -translate-x-1/2 glass rounded-lg px-3 py-2 text-center whitespace-nowrap pointer-events-none"
             style={{ bottom: 72 }}
