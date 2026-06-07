@@ -40,7 +40,10 @@ export function ProjectOverlay() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            onClick={() => { playClose(); setActiveSlug(null); }}
+            onClick={() => {
+              playClose();
+              setActiveSlug(null);
+            }}
           />
 
           <motion.div
@@ -70,11 +73,14 @@ export function ProjectOverlay() {
               }}
             />
 
-            <div className="relative px-10 py-8">
+            <div className="relative px-12 py-10">
               {/* Nav bar */}
               <div className="flex items-center justify-between">
                 <button
-                  onClick={() => setActiveSlug(null)}
+                  onClick={() => {
+                    playClose();
+                    setActiveSlug(null);
+                  }}
                   className="flex items-center gap-2 text-secondary/60 hover:text-primary transition-colors font-mono text-[11px] group"
                 >
                   <span className="group-hover:-translate-x-1 transition-transform">
@@ -83,7 +89,10 @@ export function ProjectOverlay() {
                   <span>Return to orbit</span>
                 </button>
                 <button
-                  onClick={() => setActiveSlug(null)}
+                  onClick={() => {
+                    playClose();
+                    setActiveSlug(null);
+                  }}
                   className="text-secondary/40 hover:text-primary transition-colors font-mono text-[11px]"
                 >
                   ESC
@@ -91,7 +100,7 @@ export function ProjectOverlay() {
               </div>
 
               {/* Badge row */}
-              <div className="flex items-center gap-2 mt-8">
+              <div className="flex items-center gap-2 mt-10">
                 <div
                   className="w-2 h-2 rounded-full"
                   style={{
@@ -118,7 +127,7 @@ export function ProjectOverlay() {
 
               {/* Title */}
               <h2
-                className="text-3xl font-bold mt-3 leading-tight"
+                className="text-3xl font-bold mt-4 leading-tight"
                 style={{ color: "#f0eef5" }}
               >
                 {project.title}
@@ -127,14 +136,14 @@ export function ProjectOverlay() {
               {/* Tagline */}
               {project.tagline &&
                 project.tagline !== "A project on GitHub" && (
-                  <p className="text-[15px] text-secondary mt-2 leading-relaxed">
+                  <p className="text-[15px] text-secondary mt-3 leading-relaxed">
                     {project.tagline}
                   </p>
                 )}
 
               {/* Tech stack */}
               {project.techStack.length > 0 && (
-                <div className="flex flex-wrap gap-1.5 mt-5">
+                <div className="flex flex-wrap gap-2 mt-6">
                   {project.techStack.map((tech) => (
                     <span
                       key={tech}
@@ -153,7 +162,7 @@ export function ProjectOverlay() {
 
               {/* Divider */}
               <div
-                className="mt-8 h-px"
+                className="mt-10 h-px"
                 style={{
                   background: `linear-gradient(90deg, ${colors.glow}20, transparent)`,
                 }}
@@ -162,8 +171,8 @@ export function ProjectOverlay() {
               {/* Description */}
               {project.description &&
                 !project.description.endsWith("software project.") && (
-                  <div className="mt-8">
-                    <p className="text-[13px] text-primary/70 leading-[1.8]">
+                  <div className="mt-10">
+                    <p className="text-[13.5px] text-primary/70 leading-[1.9]">
                       {project.description}
                     </p>
                   </div>
@@ -172,41 +181,45 @@ export function ProjectOverlay() {
               {/* Action buttons */}
               {(project.deployUrl ||
                 (project.links && project.links.length > 0)) && (
-                <div className="mt-8 space-y-3">
+                <div className="mt-10 space-y-4">
                   {/* Deploy CTA */}
                   {project.deployUrl && (
                     <a
                       href={project.deployUrl}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="flex items-center justify-between w-full px-5 py-3.5 rounded-xl text-sm font-mono transition-all group"
+                      className="inline-flex items-center gap-3 px-5 py-3 rounded-lg text-[12px] font-mono transition-all group"
                       style={{
-                        background: `linear-gradient(135deg, ${colors.glow}12, ${colors.glow}06)`,
+                        background: `${colors.glow}10`,
                         border: `1px solid ${colors.glow}25`,
                       }}
                       onMouseEnter={(e) => {
-                        e.currentTarget.style.borderColor = `${colors.glow}60`;
-                        e.currentTarget.style.background = `linear-gradient(135deg, ${colors.glow}18, ${colors.glow}0a)`;
+                        e.currentTarget.style.borderColor = `${colors.glow}50`;
+                        e.currentTarget.style.background = `${colors.glow}18`;
                       }}
                       onMouseLeave={(e) => {
                         e.currentTarget.style.borderColor = `${colors.glow}25`;
-                        e.currentTarget.style.background = `linear-gradient(135deg, ${colors.glow}12, ${colors.glow}06)`;
+                        e.currentTarget.style.background = `${colors.glow}10`;
                       }}
                     >
-                      <div>
-                        <p
-                          className="text-[11px] uppercase tracking-wider mb-1"
-                          style={{ color: `${colors.glow}80` }}
-                        >
-                          Launch Pad
-                        </p>
-                        <p style={{ color: colors.glow }}>
-                          Ready for takeoff
-                        </p>
-                      </div>
                       <span
-                        className="text-lg group-hover:translate-x-1 transition-transform"
-                        style={{ color: colors.glow }}
+                        className="text-[10px] uppercase tracking-widest"
+                        style={{ color: `${colors.glow}60` }}
+                      >
+                        Launch Pad
+                      </span>
+                      <span
+                        className="text-[10px]"
+                        style={{ color: `${colors.glow}30` }}
+                      >
+                        |
+                      </span>
+                      <span style={{ color: `${colors.glow}cc` }}>
+                        Ready for takeoff
+                      </span>
+                      <span
+                        className="group-hover:translate-x-1 transition-transform"
+                        style={{ color: `${colors.glow}80` }}
                       >
                         -&gt;
                       </span>
@@ -215,14 +228,14 @@ export function ProjectOverlay() {
 
                   {/* Other links */}
                   {project.links && project.links.length > 0 && (
-                    <div className="flex gap-2">
+                    <div className="flex gap-3">
                       {project.links.map((link) => (
                         <a
                           key={link.label}
                           href={link.url}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="flex-1 text-center text-[12px] font-mono px-4 py-2.5 rounded-lg transition-all"
+                          className="text-[12px] font-mono px-4 py-2.5 rounded-lg transition-all"
                           style={{
                             background: "rgba(255,255,255,0.03)",
                             border: "1px solid rgba(255,255,255,0.06)",
@@ -251,7 +264,7 @@ export function ProjectOverlay() {
 
               {/* Year footer */}
               {project.year && (
-                <div className="mt-12 mb-6">
+                <div className="mt-14 mb-8">
                   <p className="text-[10px] font-mono text-secondary/25 tracking-wider">
                     LAUNCHED {project.year}
                   </p>
