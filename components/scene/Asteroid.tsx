@@ -1,6 +1,6 @@
 "use client";
 import { useState, useRef, useCallback, useEffect, useMemo } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion, AnimatePresence, useAnimationControls } from "framer-motion";
 import type { Project } from "@/data/projects";
 import { ASTEROID_COLORS, ORBIT_RADII, ORBIT_SPEEDS } from "@/lib/constants";
 import { useStore } from "@/lib/store";
@@ -33,10 +33,14 @@ export function Asteroid({
 }: AsteroidProps) {
   const [hovered, setHovered] = useState(false);
   const [launching, setLaunching] = useState(false);
-  const [launchKey, setLaunchKey] = useState(0);
+  const [visible, setVisible] = useState(true);
   const [textureUrl, setTextureUrl] = useState<string | null>(null);
 
-  const posRef = useRef({ angle: (index / totalInOrbit) * Math.PI * 2, rot: Math.random() * 360 });
+  const controls = useAnimationControls();
+  const posRef = useRef({
+    angle: (index / totalInOrbit) * Math.PI * 2,
+    rot: Math.random() * 360,
+  });
   const [pos, setPos] = useState({ x: 0, y: 0, rot: 0 });
   const animRef = useRef<number>(0);
   const setHoveredAsteroid = useStore((s) => s.setHoveredAsteroid);
@@ -50,7 +54,6 @@ export function Asteroid({
   const orbitRadius = ORBIT_RADII[project.orbit] * 40 * zoom;
   const speed = ORBIT_SPEEDS[project.orbit];
 
-  // Unique tumble speed per asteroid
   const tumbleSpeed = useMemo(() => {
     let h = 0;
     for (let i = 0; i < project.slug.length; i++) {
@@ -59,7 +62,6 @@ export function Asteroid({
     return 3 + (Math.abs(h) % 15);
   }, [project.slug]);
 
-  // Generate texture on mount
   useEffect(() => {
     const url = generateProjectAsteroid(
       project.slug,
@@ -69,12 +71,20 @@ export function Asteroid({
     setTextureUrl(url);
   }, [project.slug, project.asteroidType, size]);
 
-  // Reset launching state when overlay closes
+  // When overlay closes, bring asteroid back
   useEffect(() => {
-    if (!activeProjectSlug && launching) {
+    if (!activeProjectSlug && !visible) {
       setLaunching(false);
+      controls
+        .start({
+          scale: [0, 1.1, 1],
+          opacity: [0, 1, 1],
+          filter: ["brightness(3)", "brightness(1.2)", "brightness(1)"],
+          transition: { duration: 0.5, ease: "easeOut" },
+        })
+        .then(() => setVisible(true));
     }
-  }, [activeProjectSlug, launching]);
+  }, [activeProjectSlug, visible, controls]);
 
   // Orbit + tumble animation loop
   useEffect(() => {
@@ -104,15 +114,25 @@ export function Asteroid({
   }, [speed, launching, orbitRadius, centerX, centerY, index, tumbleSpeed]);
 
   const handleClick = useCallback(() => {
-    if (overlayOpen) return;
+    if (overlayOpen || launching) return;
     if (project.orbit === "deep") {
       setActiveProjectSlug(project.slug);
       return;
     }
+
     setLaunching(true);
-    setLaunchKey((k) => k + 1);
-    setTimeout(() => setActiveProjectSlug(project.slug), 750);
-  }, [project, setActiveProjectSlug, overlayOpen]);
+    setVisible(false);
+
+    // Play burst animation
+    controls.start({
+      scale: [1, 1.5, 0],
+      opacity: [1, 1, 0],
+      filter: ["brightness(1)", "brightness(3)", "brightness(6)"],
+      transition: { duration: 0.6, ease: [0.22, 1, 0.36, 1] },
+    });
+
+    setTimeout(() => setActiveProjectSlug(project.slug), 650);
+  }, [project, setActiveProjectSlug, overlayOpen, launching, controls]);
 
   const handleHoverStart = useCallback(() => {
     if (overlayOpen) return;
@@ -129,41 +149,18 @@ export function Asteroid({
 
   return (
     <motion.div
-      key={`asteroid-${project.slug}-${launchKey}`}
       className={`absolute select-none ${overlayOpen ? "cursor-default" : "cursor-pointer"}`}
       style={{
         left: pos.x - size / 2,
         top: pos.y - size / 2,
         zIndex: hovered ? 50 : Math.round(pos.y),
       }}
-      initial={launchKey > 0 && !launching ? { scale: 0, opacity: 0 } : false}
-      animate={
-        launching
-          ? {
-              scale: [1, 1.4, 0],
-              opacity: [1, 1, 0],
-              filter: [
-                "brightness(1)",
-                "brightness(3)",
-                "brightness(5)",
-              ],
-            }
-          : {
-              scale: 1,
-              opacity: 1,
-              filter: "brightness(1)",
-            }
-      }
-      transition={
-        launching
-          ? { duration: 0.6, ease: [0.22, 1, 0.36, 1] }
-          : { duration: 0.6, ease: "easeOut" }
-      }
+      animate={controls}
       onHoverStart={handleHoverStart}
       onHoverEnd={handleHoverEnd}
       onClick={handleClick}
     >
-      {/* Subtle highlight on hover — no atmospheric glow (asteroids have no atmosphere) */}
+      {/* Subtle highlight on hover */}
       {hovered && (
         <div
           className="absolute inset-0 pointer-events-none transition-opacity duration-300"
@@ -241,21 +238,20 @@ export function Asteroid({
         {project.title}
       </p>
 
-      {/* Launch burst */}
+      {/* Launch burst particles */}
       {launching && (
         <>
           <motion.div
             className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 rounded-full"
             initial={{ width: size, height: size, opacity: 0.9 }}
-            animate={{ width: size * 5, height: size * 5, opacity: 0 }}
+            animate={{ width: size * 6, height: size * 6, opacity: 0 }}
             transition={{ duration: 0.6 }}
             style={{
               background: `radial-gradient(circle, ${colors.glow}, ${colors.emissive}40, transparent)`,
             }}
           />
-          {/* Debris particles */}
-          {[...Array(6)].map((_, i) => {
-            const pAngle = (i / 6) * Math.PI * 2;
+          {[...Array(8)].map((_, i) => {
+            const pAngle = (i / 8) * Math.PI * 2;
             return (
               <motion.div
                 key={i}
@@ -267,14 +263,14 @@ export function Asteroid({
                   left: size / 2,
                   top: size / 2,
                 }}
-                initial={{ opacity: 0.8 }}
+                initial={{ opacity: 0.9, scale: 1 }}
                 animate={{
-                  x: Math.cos(pAngle) * 60,
-                  y: Math.sin(pAngle) * 60,
+                  x: Math.cos(pAngle) * 80,
+                  y: Math.sin(pAngle) * 80,
                   opacity: 0,
                   scale: 0,
                 }}
-                transition={{ duration: 0.5, delay: 0.1 }}
+                transition={{ duration: 0.5, delay: 0.05 }}
               />
             );
           })}
