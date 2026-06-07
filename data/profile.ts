@@ -36,7 +36,7 @@ export const profile = {
     },
     {
       label: "Resume",
-      url: "/Users/aamar/Ashtroid Inc/ashtroids/Ashish_Amar_Latest_Resume (1).pdf",
+      url: "/resume.pdf",
       icon: "file",
       transmission: "Black Box Recorder",
     },
