@@ -180,7 +180,7 @@ export function ProjectOverlay() {
 
               {/* Deploy CTA */}
               {project.deployUrl && (
-                <div style={{ marginTop: 27 }}>
+                <div style={{ marginTop: 24 }}>
                   <a
                     href={project.deployUrl}
                     target="_blank"
@@ -259,7 +259,7 @@ export function ProjectOverlay() {
               )}
 
               {/* About Me shortcut */}
-              <div style={{ marginTop: 14 }}>
+              <div style={{ marginTop: 13 }}>
                 <div
                   style={{
                     height: 1,

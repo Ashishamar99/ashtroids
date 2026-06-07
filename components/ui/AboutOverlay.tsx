@@ -169,7 +169,7 @@ export function AboutOverlay() {
               {/* Divider */}
               <div
                 style={{
-                  marginTop: 24,
+                  marginTop: 20,
                   height: 1,
                   background:
                     "linear-gradient(90deg, rgba(107,141,181,0.15), transparent)",
