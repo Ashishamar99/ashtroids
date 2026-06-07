@@ -10,7 +10,7 @@ export function HUD() {
   const resetBursts = useStore((s) => s.resetBursts);
 
   return (
-    <div className="fixed inset-0 pointer-events-none z-20">
+    <div className="fixed inset-0 pointer-events-none" style={{ zIndex: 45 }}>
       {/* Top left — Branding */}
       <motion.div
         className="absolute top-6 left-6 pointer-events-auto"
@@ -38,7 +38,7 @@ export function HUD() {
 
       {/* Bottom left — Hint */}
       <motion.div
-        className="absolute bottom-6 left-6 pointer-events-auto"
+        className="absolute bottom-6 left-6 pointer-events-auto flex items-center gap-4"
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.8, delay: 1.2 }}
@@ -48,6 +48,16 @@ export function HUD() {
           className="text-[10px] font-mono text-secondary/50 hover:text-secondary transition-colors"
         >
           [`] TERMINAL
+        </button>
+        <button
+          onClick={() => {
+            const store = useStore.getState();
+            store.setActiveProjectSlug(null);
+            store.setAboutOpen(true);
+          }}
+          className="text-[10px] font-mono text-secondary/50 hover:text-secondary transition-colors"
+        >
+          ABOUT
         </button>
       </motion.div>
 
