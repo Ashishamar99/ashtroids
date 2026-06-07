@@ -45,6 +45,7 @@ export default function Home() {
   }, [setGameActive, terminalOpen]);
 
   useKeySequence("ASHTEROID", handleGameActivate, !gameActive);
+  useKeySequence("ASTEROID", handleGameActivate, !gameActive);
 
   return (
     <main className="h-full relative overflow-hidden bg-space">

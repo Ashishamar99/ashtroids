@@ -29,6 +29,10 @@ interface AshtroidsState {
   launchingAsteroid: string | null;
   setLaunchingAsteroid: (slug: string | null) => void;
 
+  burstCount: number;
+  incrementBurst: () => void;
+  resetBursts: () => void;
+
   isMobile: boolean;
   setIsMobile: (mobile: boolean) => void;
 
@@ -61,6 +65,10 @@ export const useStore = create<AshtroidsState>((set) => ({
 
   launchingAsteroid: null,
   setLaunchingAsteroid: (slug) => set({ launchingAsteroid: slug }),
+
+  burstCount: 0,
+  incrementBurst: () => set((s) => ({ burstCount: s.burstCount + 1 })),
+  resetBursts: () => set({ burstCount: 0 }),
 
   isMobile: false,
   setIsMobile: (mobile) => set({ isMobile: mobile }),

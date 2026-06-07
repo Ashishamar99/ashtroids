@@ -1,11 +1,13 @@
 "use client";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import { ModeToggle } from "./ModeToggle";
 import { useStore } from "@/lib/store";
 
 export function HUD() {
   const toggleTerminal = useStore((s) => s.toggleTerminal);
   const gameActive = useStore((s) => s.gameActive);
+  const burstCount = useStore((s) => s.burstCount);
+  const resetBursts = useStore((s) => s.resetBursts);
 
   return (
     <div className="fixed inset-0 pointer-events-none z-20">
@@ -75,6 +77,28 @@ export function HUD() {
           </div>
         </motion.div>
       )}
+
+      {/* Restore orbit button — shows after 5+ bursts */}
+      <AnimatePresence>
+        {burstCount >= 5 && !gameActive && (
+          <motion.div
+            className="absolute bottom-6 left-1/2 -translate-x-1/2 pointer-events-auto"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: 20 }}
+          >
+            <button
+              onClick={() => {
+                resetBursts();
+                window.location.reload();
+              }}
+              className="glass rounded-full px-5 py-2.5 text-xs font-mono text-accent-glow hover:text-primary border border-accent-glow/20 hover:border-accent-glow/40 transition-all"
+            >
+              Restore Orbit
+            </button>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }

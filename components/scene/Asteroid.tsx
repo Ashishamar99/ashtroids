@@ -42,6 +42,7 @@ export function Asteroid({
   const setActiveProjectSlug = useStore((s) => s.setActiveProjectSlug);
   const activeProjectSlug = useStore((s) => s.activeProjectSlug);
   const aboutOpen = useStore((s) => s.aboutOpen);
+  const incrementBurst = useStore((s) => s.incrementBurst);
   const overlayOpen = !!activeProjectSlug || aboutOpen;
 
   const colors = ASTEROID_COLORS[project.asteroidType];
@@ -99,11 +100,13 @@ export function Asteroid({
     if (overlayOpen) return;
     if (project.orbit === "deep") {
       setActiveProjectSlug(project.slug);
+      incrementBurst();
       return;
     }
     setLaunching(true);
+    incrementBurst();
     setTimeout(() => setActiveProjectSlug(project.slug), 750);
-  }, [project, setActiveProjectSlug, overlayOpen]);
+  }, [project, setActiveProjectSlug, overlayOpen, incrementBurst]);
 
   const handleHoverStart = useCallback(() => {
     if (overlayOpen) return;
