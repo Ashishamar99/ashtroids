@@ -169,7 +169,7 @@ export function AboutOverlay() {
               {/* Divider */}
               <div
                 style={{
-                  marginTop: 48,
+                  marginTop: 24,
                   height: 1,
                   background:
                     "linear-gradient(90deg, rgba(107,141,181,0.15), transparent)",
@@ -230,7 +230,7 @@ export function AboutOverlay() {
               </div>
 
               {/* Contact */}
-              <div style={{ marginTop: 48, marginBottom: 40 }}>
+              <div style={{ marginTop: 24, marginBottom: 40 }}>
                 <h3 className="text-[10px] font-mono text-secondary/40 tracking-widest uppercase mb-3">
                   Direct Signal
                 </h3>
