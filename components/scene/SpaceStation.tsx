@@ -24,11 +24,11 @@ export function SpaceStation({ centerX, centerY }: SpaceStationProps) {
 
   return (
     <motion.div
-      className={`absolute select-none ${overlayOpen ? "cursor-default" : "cursor-pointer"}`}
+      className={`absolute select-none ${aboutOpen ? "cursor-default" : "cursor-pointer"}`}
       style={{
         left: centerX - 30,
         top: centerY - 30,
-        zIndex: 35,
+        zIndex: activeProjectSlug ? 45 : 35,
       }}
       animate={{ y: [0, -4, 0] }}
       transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}

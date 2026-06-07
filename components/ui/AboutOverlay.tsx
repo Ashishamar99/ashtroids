@@ -68,7 +68,7 @@ export function AboutOverlay() {
               }}
             />
 
-            <div className="relative px-10 py-8">
+            <div className="relative px-12 py-10">
               {/* Nav */}
               <div className="flex items-center justify-between">
                 <button
@@ -88,41 +88,46 @@ export function AboutOverlay() {
                 </button>
               </div>
 
-              {/* Header */}
-              <div className="mt-8">
-                <div className="flex items-center gap-2 mb-4">
-                  <div
-                    className="w-2 h-2 rounded-full"
-                    style={{
-                      backgroundColor: "#6b8db5",
-                      boxShadow: "0 0 8px #6b8db5",
-                    }}
-                  />
-                  <span className="text-[10px] font-mono text-secondary/50 uppercase tracking-widest">
-                    Transmission Received
-                  </span>
-                </div>
-                <h2 className="text-3xl font-bold" style={{ color: "#f0eef5" }}>
-                  {profile.name}
-                </h2>
-                <p className="text-[15px] text-secondary mt-1.5">
-                  {profile.title}
-                </p>
+              {/* Badge */}
+              <div className="flex items-center gap-2 mt-10">
+                <div
+                  className="w-2 h-2 rounded-full"
+                  style={{
+                    backgroundColor: "#6b8db5",
+                    boxShadow: "0 0 8px #6b8db5",
+                  }}
+                />
+                <span className="text-[10px] font-mono text-secondary/50 uppercase tracking-widest">
+                  Transmission Received
+                </span>
               </div>
 
-              {/* Bio */}
+              {/* Name */}
+              <h2
+                className="text-3xl font-bold mt-4"
+                style={{ color: "#f0eef5" }}
+              >
+                {profile.name}
+              </h2>
+              <p className="text-[15px] text-secondary mt-2">
+                {profile.title}
+              </p>
+
+              {/* Divider */}
               <div
-                className="mt-8 h-px"
+                className="mt-10 h-px"
                 style={{
                   background:
                     "linear-gradient(90deg, rgba(107,141,181,0.2), transparent)",
                 }}
               />
-              <div className="mt-8 space-y-3">
+
+              {/* Bio */}
+              <div className="mt-10 space-y-4">
                 {profile.bio.map((line, i) => (
                   <p
                     key={i}
-                    className="text-[13px] text-primary/70 leading-[1.8]"
+                    className="text-[13.5px] text-primary/70 leading-[1.9]"
                   >
                     {line}
                   </p>
@@ -131,17 +136,17 @@ export function AboutOverlay() {
 
               {/* Tagline */}
               <div
-                className="mt-6 pl-4"
+                className="mt-8 pl-4"
                 style={{ borderLeft: "2px solid rgba(107,141,181,0.2)" }}
               >
-                <p className="text-sm text-secondary/60 italic">
+                <p className="text-[13px] text-secondary/50 italic leading-relaxed">
                   {profile.tagline}
                 </p>
               </div>
 
               {/* Interests */}
-              <div className="mt-10">
-                <h3 className="text-[10px] font-mono text-secondary/40 tracking-widest uppercase mb-3">
+              <div className="mt-12">
+                <h3 className="text-[10px] font-mono text-secondary/40 tracking-widest uppercase mb-4">
                   Signal Interests
                 </h3>
                 <div className="flex flex-wrap gap-2">
@@ -163,7 +168,7 @@ export function AboutOverlay() {
 
               {/* Divider */}
               <div
-                className="mt-10 h-px"
+                className="mt-12 h-px"
                 style={{
                   background:
                     "linear-gradient(90deg, rgba(107,141,181,0.15), transparent)",
@@ -171,18 +176,18 @@ export function AboutOverlay() {
               />
 
               {/* Socials */}
-              <div className="mt-8">
-                <h3 className="text-[10px] font-mono text-secondary/40 tracking-widest uppercase mb-3">
+              <div className="mt-12">
+                <h3 className="text-[10px] font-mono text-secondary/40 tracking-widest uppercase mb-5">
                   Comm Channels
                 </h3>
-                <div className="space-y-2">
+                <div className="space-y-3">
                   {profile.socials.map((social) => (
                     <a
                       key={social.label}
                       href={social.url}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="flex items-center justify-between p-3.5 rounded-xl transition-all group"
+                      className="flex items-center justify-between p-4 rounded-xl transition-all group"
                       style={{
                         background: "rgba(255,255,255,0.02)",
                         border: "1px solid rgba(255,255,255,0.04)",
@@ -201,14 +206,14 @@ export function AboutOverlay() {
                       }}
                     >
                       <div>
-                        <p className="text-sm font-medium text-primary/80 group-hover:text-primary transition-colors">
+                        <p className="text-[13px] font-medium text-primary/80 group-hover:text-primary transition-colors">
                           {social.label}
                         </p>
-                        <p className="text-[10px] font-mono text-secondary/40 mt-0.5">
+                        <p className="text-[10px] font-mono text-secondary/35 mt-1">
                           {social.transmission}
                         </p>
                       </div>
-                      <span className="text-secondary/30 group-hover:text-accent-glow group-hover:translate-x-0.5 transition-all font-mono text-xs">
+                      <span className="text-secondary/25 group-hover:text-accent-glow group-hover:translate-x-0.5 transition-all font-mono text-xs">
                         -&gt;
                       </span>
                     </a>
@@ -217,7 +222,7 @@ export function AboutOverlay() {
               </div>
 
               {/* Contact */}
-              <div className="mt-10 mb-8">
+              <div className="mt-12 mb-10">
                 <h3 className="text-[10px] font-mono text-secondary/40 tracking-widest uppercase mb-3">
                   Direct Signal
                 </h3>

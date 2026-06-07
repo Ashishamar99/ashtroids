@@ -181,7 +181,7 @@ export function ProjectOverlay() {
               {/* Action buttons */}
               {(project.deployUrl ||
                 (project.links && project.links.length > 0)) && (
-                <div className="mt-10 space-y-4">
+                <div className="mt-12 space-y-5">
                   {/* Deploy CTA */}
                   {project.deployUrl && (
                     <a
@@ -228,7 +228,7 @@ export function ProjectOverlay() {
 
                   {/* Other links */}
                   {project.links && project.links.length > 0 && (
-                    <div className="flex gap-3">
+                    <div className="flex gap-3 mt-4">
                       {project.links.map((link) => (
                         <a
                           key={link.label}
