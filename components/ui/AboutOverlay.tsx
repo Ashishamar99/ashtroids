@@ -168,27 +168,32 @@ export function AboutOverlay() {
 
               {/* Divider */}
               <div
-                className="mt-12 h-px"
                 style={{
+                  marginTop: 48,
+                  height: 1,
                   background:
                     "linear-gradient(90deg, rgba(107,141,181,0.15), transparent)",
                 }}
               />
 
               {/* Socials */}
-              <div className="mt-12">
-                <h3 className="text-[10px] font-mono text-secondary/40 tracking-widest uppercase mb-5">
+              <div style={{ marginTop: 40 }}>
+                <h3
+                  className="text-[10px] font-mono text-secondary/40 tracking-widest uppercase"
+                  style={{ marginBottom: 20 }}
+                >
                   Comm Channels
                 </h3>
-                <div className="space-y-3">
+                <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
                   {profile.socials.map((social) => (
                     <a
                       key={social.label}
                       href={social.url}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="flex items-center justify-between p-4 rounded-xl transition-all group"
+                      className="flex items-center justify-between rounded-xl transition-all group"
                       style={{
+                        padding: 16,
                         background: "rgba(255,255,255,0.02)",
                         border: "1px solid rgba(255,255,255,0.04)",
                       }}
@@ -209,7 +214,10 @@ export function AboutOverlay() {
                         <p className="text-[13px] font-medium text-primary/80 group-hover:text-primary transition-colors">
                           {social.label}
                         </p>
-                        <p className="text-[10px] font-mono text-secondary/35 mt-1">
+                        <p
+                          className="text-[10px] font-mono text-secondary/35"
+                          style={{ marginTop: 4 }}
+                        >
                           {social.transmission}
                         </p>
                       </div>
@@ -222,7 +230,7 @@ export function AboutOverlay() {
               </div>
 
               {/* Contact */}
-              <div className="mt-12 mb-10">
+              <div style={{ marginTop: 48, marginBottom: 40 }}>
                 <h3 className="text-[10px] font-mono text-secondary/40 tracking-widest uppercase mb-3">
                   Direct Signal
                 </h3>
