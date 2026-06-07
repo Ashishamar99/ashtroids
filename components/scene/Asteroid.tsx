@@ -33,6 +33,7 @@ export function Asteroid({
 }: AsteroidProps) {
   const [hovered, setHovered] = useState(false);
   const [launching, setLaunching] = useState(false);
+  const [launchKey, setLaunchKey] = useState(0);
   const [textureUrl, setTextureUrl] = useState<string | null>(null);
 
   const posRef = useRef({ angle: (index / totalInOrbit) * Math.PI * 2, rot: Math.random() * 360 });
@@ -109,6 +110,7 @@ export function Asteroid({
       return;
     }
     setLaunching(true);
+    setLaunchKey((k) => k + 1);
     setTimeout(() => setActiveProjectSlug(project.slug), 750);
   }, [project, setActiveProjectSlug, overlayOpen]);
 
@@ -127,37 +129,35 @@ export function Asteroid({
 
   return (
     <motion.div
+      key={`asteroid-${project.slug}-${launchKey}`}
       className={`absolute select-none ${overlayOpen ? "cursor-default" : "cursor-pointer"}`}
       style={{
         left: pos.x - size / 2,
         top: pos.y - size / 2,
         zIndex: hovered ? 50 : Math.round(pos.y),
       }}
+      initial={launchKey > 0 && !launching ? { scale: 0, opacity: 0 } : false}
       animate={
         launching
           ? {
-              scale: [1, 1.3, 0.2],
+              scale: [1, 1.4, 0],
               opacity: [1, 1, 0],
-              x: [0, 0, window.innerWidth / 2 - pos.x],
-              y: [0, 0, window.innerHeight / 2 - pos.y],
               filter: [
                 "brightness(1)",
-                "brightness(2.5)",
-                "brightness(4)",
+                "brightness(3)",
+                "brightness(5)",
               ],
             }
           : {
               scale: 1,
               opacity: 1,
-              x: 0,
-              y: 0,
               filter: "brightness(1)",
             }
       }
       transition={
         launching
-          ? { duration: 0.75, ease: [0.22, 1, 0.36, 1] }
-          : { duration: 0.5, ease: "easeOut" }
+          ? { duration: 0.6, ease: [0.22, 1, 0.36, 1] }
+          : { duration: 0.6, ease: "easeOut" }
       }
       onHoverStart={handleHoverStart}
       onHoverEnd={handleHoverEnd}
