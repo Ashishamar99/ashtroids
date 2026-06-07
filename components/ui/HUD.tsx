@@ -80,7 +80,7 @@ export function HUD() {
 
       {/* Restore orbit button — shows after 5+ bursts */}
       <AnimatePresence>
-        {burstCount >= 5 && !gameActive && (
+        {burstCount >= 3 && !gameActive && (
           <motion.div
             className="absolute bottom-6 left-1/2 -translate-x-1/2 pointer-events-auto"
             initial={{ opacity: 0, y: 20 }}

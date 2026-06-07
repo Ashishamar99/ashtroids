@@ -17,10 +17,10 @@ export function SpaceStation({ centerX, centerY }: SpaceStationProps) {
   const overlayOpen = !!activeProjectSlug || aboutOpen;
 
   const handleClick = useCallback(() => {
-    if (overlayOpen) return;
+    if (aboutOpen) return;
     setActiveProjectSlug(null);
     setAboutOpen(true);
-  }, [setAboutOpen, setActiveProjectSlug, overlayOpen]);
+  }, [setAboutOpen, setActiveProjectSlug, aboutOpen]);
 
   return (
     <motion.div
@@ -32,7 +32,7 @@ export function SpaceStation({ centerX, centerY }: SpaceStationProps) {
       }}
       animate={{ y: [0, -4, 0] }}
       transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
-      onHoverStart={() => { if (!overlayOpen) setHovered(true); }}
+      onHoverStart={() => { if (!aboutOpen) setHovered(true); }}
       onHoverEnd={() => setHovered(false)}
       onClick={handleClick}
     >
