@@ -11,7 +11,7 @@ env:
 jobs:
   deploy:
     runs-on: ubuntu-latest
-    environment: Prod Deployment Env
+    environment: Prod Env Ashteroids
     steps:
       - uses: actions/checkout@v4
 
