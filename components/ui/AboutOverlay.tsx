@@ -211,7 +211,7 @@ export function AboutOverlay() {
                       }}
                     >
                       <div>
-                        <p className="text-[13px] font-medium text-primary/80 group-hover:text-primary transition-colors">
+                        <p className="text-[13px] font-medium text-accent-glow group-hover:text-accent-ice transition-colors">
                           {social.label}
                         </p>
                         <p
@@ -221,7 +221,7 @@ export function AboutOverlay() {
                           {social.transmission}
                         </p>
                       </div>
-                      <span className="text-secondary/25 group-hover:text-accent-glow group-hover:translate-x-0.5 transition-all font-mono text-xs">
+                      <span className="text-secondary/25 group-hover:text-accent-ice group-hover:translate-x-0.5 transition-all font-mono text-xs">
                         -&gt;
                       </span>
                     </a>

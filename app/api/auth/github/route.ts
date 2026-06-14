@@ -1,10 +1,10 @@
 import { NextResponse } from "next/server";
 
 export async function GET() {
-  const clientId = process.env.GITHUB_CLIENT_ID;
+  const clientId = process.env.GH_CLIENT_ID;
   if (!clientId) {
     return NextResponse.json(
-      { error: "GITHUB_CLIENT_ID not configured" },
+      { error: "GH_CLIENT_ID not configured" },
       { status: 500 }
     );
   }

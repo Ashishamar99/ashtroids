@@ -8,8 +8,8 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ error: "No code provided" }, { status: 400 });
   }
 
-  const clientId = process.env.GITHUB_CLIENT_ID;
-  const clientSecret = process.env.GITHUB_CLIENT_SECRET;
+  const clientId = process.env.GH_CLIENT_ID;
+  const clientSecret = process.env.GH_CLIENT_SECRET;
   if (!clientId || !clientSecret) {
     return NextResponse.json(
       { error: "GitHub OAuth not configured" },
@@ -52,15 +52,13 @@ export async function GET(request: NextRequest) {
     }
 
     const lines = envContent.split("\n").filter(Boolean);
-    const filtered = lines.filter((l) => !l.startsWith("GITHUB_TOKEN="));
-    filtered.push(`GITHUB_TOKEN=${token}`);
+    const filtered = lines.filter((l) => !l.startsWith("GH_TOKEN="));
+    filtered.push(`GH_TOKEN=${token}`);
     await fs.writeFile(envPath, filtered.join("\n") + "\n");
 
-    // Also set in process.env for immediate use
-    process.env.GITHUB_TOKEN = token;
+    process.env.GH_TOKEN = token;
   } catch {
-    // In production, filesystem is read-only — token only lives in memory
-    process.env.GITHUB_TOKEN = token;
+    process.env.GH_TOKEN = token;
   }
 
   const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000";

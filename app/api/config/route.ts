@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { promises as fs } from "fs";
 import path from "path";
+import { isAdminAuthenticated } from "@/lib/session";
 
 const CONFIG_PATH = path.join(process.cwd(), "data", "ashteroids.json");
 
@@ -17,10 +18,14 @@ export async function GET() {
 }
 
 export async function POST(request: NextRequest) {
+  const authed = await isAdminAuthenticated();
+  if (!authed) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
   try {
     const body = await request.json();
 
-    // Validate basic structure
     if (!body.githubUsername || !body.repos || !body.manualProjects) {
       return NextResponse.json(
         { error: "Invalid config structure" },

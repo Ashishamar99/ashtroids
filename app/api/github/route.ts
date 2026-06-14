@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 
 export async function GET() {
-  const token = process.env.GITHUB_TOKEN;
+  const token = process.env.GH_TOKEN;
 
   const headers: Record<string, string> = {
     Accept: "application/vnd.github.v3+json",
@@ -19,7 +19,7 @@ export async function GET() {
     while (true) {
       const url = token
         ? `https://api.github.com/user/repos?per_page=${perPage}&page=${page}&sort=updated&affiliation=owner`
-        : `https://api.github.com/users/${process.env.GITHUB_USERNAME || "Ashishamar99"}/repos?per_page=${perPage}&page=${page}&sort=updated`;
+        : `https://api.github.com/users/${process.env.GH_USERNAME || "Ashishamar99"}/repos?per_page=${perPage}&page=${page}&sort=updated`;
 
       const res = await fetch(url, { headers });
 
