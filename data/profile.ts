@@ -41,7 +41,7 @@ export const profile = {
       transmission: "Black Box Recorder",
     },
   ],
-  email: "hello@ashish.dev",
+  email: "ashishamar1999@gmail.com",
 };
 
 export const signalLogs = [
