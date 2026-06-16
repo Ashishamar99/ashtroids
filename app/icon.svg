@@ -1,0 +1,62 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 827 901">
+  <!-- Left trail swoosh -->
+  <path d="M 268 130 C 215 250, 140 400, 100 540 C 70 640, 55 750, 45 870"
+        stroke="#2B2B2B" stroke-width="24" fill="none" stroke-linecap="round"/>
+
+  <!-- Right trail swoosh -->
+  <path d="M 595 45 C 590 150, 575 300, 555 440 C 535 570, 510 710, 475 870"
+        stroke="#2B2B2B" stroke-width="24" fill="none" stroke-linecap="round"/>
+
+  <!-- Speed lines (4 parallel diagonal lines) -->
+  <line x1="368" y1="185" x2="445" y2="108" stroke="#2B2B2B" stroke-width="22" stroke-linecap="round"/>
+  <line x1="413" y1="160" x2="490" y2="83" stroke="#2B2B2B" stroke-width="22" stroke-linecap="round"/>
+  <line x1="458" y1="135" x2="535" y2="58" stroke="#2B2B2B" stroke-width="22" stroke-linecap="round"/>
+  <line x1="503" y1="110" x2="580" y2="33" stroke="#2B2B2B" stroke-width="22" stroke-linecap="round"/>
+
+  <!-- Asteroid body - black outline -->
+  <path d="M 330 240
+           C 355 216, 415 208, 455 224
+           C 482 236, 504 268, 500 300
+           C 498 318, 504 340, 518 358
+           C 532 376, 526 410, 504 438
+           C 488 458, 462 478, 432 492
+           C 412 502, 390 520, 362 516
+           C 340 512, 316 496, 296 474
+           C 276 452, 254 426, 258 398
+           C 260 378, 250 356, 258 334
+           C 266 312, 280 276, 302 254
+           C 314 242, 324 240, 330 240 Z"
+        fill="#2B2B2B"/>
+
+  <!-- Asteroid body - beige fill -->
+  <path d="M 338 258
+           C 360 238, 410 232, 445 245
+           C 468 255, 486 282, 484 308
+           C 482 322, 488 340, 500 356
+           C 512 370, 508 398, 490 420
+           C 476 436, 454 452, 428 464
+           C 412 472, 392 486, 370 484
+           C 352 480, 332 468, 316 452
+           C 300 436, 282 416, 286 394
+           C 288 378, 280 360, 286 342
+           C 292 324, 302 294, 320 276
+           C 328 264, 334 260, 338 258 Z"
+        fill="#D9D0C4"/>
+
+  <!-- Crater - small circle hole near top -->
+  <circle cx="420" cy="290" r="16" fill="#D9D0C4" stroke="#2B2B2B" stroke-width="8"/>
+
+  <!-- Three diagonal scratch lines (center) -->
+  <line x1="400" y1="345" x2="418" y2="370" stroke="#2B2B2B" stroke-width="7" stroke-linecap="round"/>
+  <line x1="412" y1="340" x2="430" y2="365" stroke="#2B2B2B" stroke-width="7" stroke-linecap="round"/>
+  <line x1="424" y1="335" x2="442" y2="360" stroke="#2B2B2B" stroke-width="7" stroke-linecap="round"/>
+
+  <!-- Crescent crater - right side (opening right) -->
+  <path d="M 472 355 C 492 368, 492 392, 472 405 C 480 392, 480 368, 472 355 Z" fill="#2B2B2B"/>
+
+  <!-- Crescent crater - left side, large (opening left) -->
+  <path d="M 340 416 C 314 432, 314 462, 340 476 C 326 462, 326 432, 340 416 Z" fill="#2B2B2B"/>
+
+  <!-- Crescent crater - bottom center (opening left) -->
+  <path d="M 395 468 C 378 478, 378 496, 395 504 C 386 496, 386 478, 395 468 Z" fill="#2B2B2B"/>
+</svg>
