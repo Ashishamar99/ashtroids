@@ -23,7 +23,7 @@
       "tagline": "Joyful, stress-free wedding logistics",
       "description": "A wedding planning app that handles the chaos so you don't have to. Guest management with CSV import, family grouping, and RSVP tracking. Route planning with Mapbox clustering to optimize invitation delivery. Timeline builder, budget tracker, and a shared team dashboard — all powered by Supabase and deployed on Vercel.",
       "techStack": ["React", "TypeScript", "Supabase", "Mapbox", "Vercel"],
-      "deployUrl": "https://shaadi-flow.vercel.app/",
+      "deployUrl": "https://www.shaadiflow.in/",
       "showLink": true
     },
     "My-Coffee-Breaks": {
